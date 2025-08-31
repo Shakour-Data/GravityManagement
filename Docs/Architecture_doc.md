@@ -1,1091 +1,429 @@
+# GravityPM Architecture Documentation
 
+## Overview
 
-# سند طراحی معماری نرم‌افزار GravityPM
+GravityPM is a comprehensive project management system built with modern web technologies. The system provides automated project management capabilities with seamless GitHub integration for streamlined development workflows.
 
-## فهرست مطالب
+## Technology Stack
 
-1. [مقدمه](#مقدمه)
-2. [مرور کلی معماری](#مرور-کلی-معماری)
-3. [الزامات سیستم](#الزامات-سیستم)
-4. [معماری سیستم](#معماری-سیستم)
-5. [مدل‌های داده](#مدلهای-داده)
-6. [اجزا و ماژول‌ها](#اجزا-و-ماژولها)
-7. [جریان داده و کنترل](#جریان-داده-و-کنترل)
-8. [یکپارچه‌سازی با سیستم‌های خارجی](#یکپارچهسازی-با-سیستمهای-خارجی)
-9. [امنیت](#امنیت)
-10. [عملکرد و مقیاس‌پذیری](#عملکرد-و-مقیاسپذیری)
-11. [استقرار](#استقرار)
-12. [نتیجه‌گیری](#نتیجهگیری)
+### Backend
+- **Framework**: FastAPI (Python)
+- **Database**: MongoDB
+- **Authentication**: JWT (JSON Web Tokens)
+- **API Documentation**: OpenAPI/Swagger
+- **ASGI Server**: Uvicorn
 
----
+### Frontend
+- **Framework**: Next.js 14 (React)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI
+- **State Management**: React Hooks
+- **HTTP Client**: Axios
 
-## مقدمه
+### Infrastructure
+- **Database**: MongoDB
+- **Cache**: Redis (optional)
+- **Deployment**: Docker
+- **Version Control**: Git
+- **CI/CD**: GitHub Actions
 
-GravityPM یک نرم‌افزار مدیریت پروژه پیشرفته است که برای مدیریت پروژه‌های پیچیده و بزرگ در سازمان‌ها طراحی شده است. این نرم‌افزار با تمرکز بر شفافیت، کارایی و همکاری تیمی، ابزارهای کاملی برای برنامه‌ریزی، اجرا و نظارت بر پروژه‌ها فراهم می‌کند.
+## System Architecture
 
-### اهداف طراحی
-
-- ایجاد یک پلتفرم یکپارچه برای مدیریت تمام جنبه‌های پروژه
-- پشتیبانی از روش‌های مختلف مدیریت پروژه (Agile, Waterfall, Hybrid)
-- ارائه دیدگاه‌های گوناگون برای ذینفعان مختلف
-- امکان یکپارچه‌سازی با ابزارهای موجود در سازمان
-- تضمین امنیت داده‌ها و کنترل دسترسی
-
-### محدوده سیستم
-
-GravityPM شامل قابلیت‌های زیر است:
-- مدیریت پروژه‌ها و زیرپروژه‌ها
-- مدیریت وظایف و فعالیت‌ها
-- تخصیص و مدیریت منابع
-- پیگیری پیشرفت و گزارش‌دهی
-- مدیریت ریسک و مسائل
-- همکاری و ارتباطات تیمی
-- یکپارچه‌سازی با ابزارهای جانبی
-
----
-
-## مرور کلی معماری
-
-### دیاگرام معماری سطح بالا
+### High-Level Architecture
 
 ```mermaid
 graph TB
-    subgraph "لایه ارائه"
-        A[رابط کاربری وب]
-        B[رابط کاربری موبایل]
-        C[API عمومی]
+    subgraph "Client Layer"
+        A[Next.js Frontend]
+        B[React Components]
+        C[API Client]
     end
-    
-    subgraph "لایه منطق کسب‌وکار"
-        D[مدیریت پروژه]
-        E[مدیریت وظایف]
-        F[مدیریت منابع]
-        G[مدیریت ریسک]
-        H[گزارش‌دهی]
-        I[موتور گردش کار]
+
+    subgraph "API Layer"
+        D[FastAPI Server]
+        E[Authentication Middleware]
+        F[CORS Middleware]
+        G[Route Handlers]
     end
-    
-    subgraph "لایه سرویس‌ها"
-        J[سرویس احراز هویت]
-        K[سرویس اعلان‌ها]
-        L[سرویس فایل‌ها]
-        M[سرویس یکپارچه‌سازی]
+
+    subgraph "Service Layer"
+        H[Business Logic]
+        I[GitHub Integration]
+        J[Data Validation]
+        K[Error Handling]
     end
-    
-    subgraph "لایه داده"
-        N[فایل‌های JSON اصلی]
-        O[فایل‌های JSON تحلیلی]
-        P[ذخیره‌سازی فایل‌ها]
-        Q[کش]
+
+    subgraph "Data Layer"
+        L[MongoDB Database]
+        M[Data Models]
+        N[Database Connection]
     end
-    
-    A --> D
-    B --> D
+
+    subgraph "External Services"
+        O[GitHub API]
+        P[GitHub Webhooks]
+    end
+
+    A --> C
     C --> D
-    D --> J
-    E --> J
-    F --> J
-    G --> J
-    H --> J
-    I --> J
-    
-    D --> N
-    E --> N
-    F --> N
-    G --> N
-    H --> O
-    I --> N
-    
-    J --> K
-    K --> Q
-    L --> P
-    M --> C
-```
-
-### توضیح معماری
-
-GravityPM از یک معماری چندلایه استفاده می‌کند که شامل:
-
-1. **لایه ارائه**: شامل رابط‌های کاربری برای وب، موبایل و API برای یکپارچه‌سازی
-2. **لایه منطق کسب‌وکار**: شامل ماژول‌های اصلی مدیریت پروژه، وظایف، منابع و ریسک
-3. **لایه سرویس‌ها**: شامل سرویس‌های پشتیبان مانند احراز هویت، اعلان‌ها و یکپارچه‌سازی
-4. **لایه داده**: شامل فایل‌های JSON، ذخیره‌سازی فایل‌ها و کش
-
-### اصول طراحی
-
-- **جداسازی وظایف**: هر جزء مسئولیت مشخصی دارد
-- **قابلیت توسعه**: سیستم به راحتی قابل گسترش است
-- **پایداری**: سیستم در برابر خطاها مقاوم است
-- **امنیت**: لایه‌های امنیتی در تمام سطوح
-- **کارایی**: بهینه‌سازی برای عملکرد بالا
-
----
-
-## الزامات سیستم
-
-### الزامات عملکردی
-
-| شناسه | الزام | اولویت | توضیح |
-|-------|-------|--------|-------|
-| FR-001 | مدیریت پروژه‌ها | بالا | ایجاد، ویرایش، حذف و مشاهده پروژه‌ها |
-| FR-002 | مدیریت وظایف | بالا | ایجاد، ویرایش، حذف و پیگیری وظایف |
-| FR-003 | تخصیص منابع | بالا | تخصیص منابع انسانی و غیرانسانی به وظایف |
-| FR-004 | پیگیری پیشرفت | بالا | گزارش پیشرفت وظایف و پروژه‌ها |
-| FR-005 | مدیریت ریسک | متوسط | شناسایی، ارزیابی و مدیریت ریسک‌ها |
-| FR-006 | گزارش‌دهی | متوسط | ایجاد گزارش‌های متنوع از پروژه‌ها |
-| FR-007 | همکاری تیمی | متوسط | امکان ارتباط و همکاری بین اعضای تیم |
-| FR-008 | یکپارچه‌سازی | پایین | اتصال به ابزارهای خارجی |
-
-### الزامات غیرعملکردی
-
-| شناسه | الزام | اولویت | معیار |
-|-------|-------|--------|-------|
-| NFR-001 | کارایی | بالا | زمان پاسخ کمتر از 2 ثانیه |
-| NFR-002 | مقیاس‌پذیری | بالا | پشتیبانی از 10000 کاربر همزمان |
-| NFR-003 | امنیت | بالا | رمزنگاری داده‌های حساس |
-| NFR-004 | قابلیت اطمینان | متوسط | 99.9% زمان کارکرد |
-| NFR-005 | قابلیت استفاده | متوسط | رابط کاربری ساده و شهودی |
-| NFR-006 | سازگاری | پایین | کاربر روی مرورگرهای اصلی |
-
-### یکپارچه‌سازی اهداف عملکردی و غیرعملکردی
-
-برای اطمینان از تحقق اهداف سیستم، الزامات عملکردی و غیرعملکردی به صورت یکپارچه در نظر گرفته شده‌اند. جدول زیر نشان می‌دهد چگونه هر الزام غیرعملکردی از تحقق الزامات عملکردی پشتیبانی می‌کند:
-
-| الزام عملکردی | الزامات غیرعملکردی مرتبط | نحوه پشتیبانی |
-|---------------|---------------------------|---------------|
-| **مدیریت پروژه‌ها (FR-001)** | کارایی (NFR-001), قابلیت اطمینان (NFR-004) | عملیات CRUD پروژه‌ها باید سریع و قابل اعتماد باشند |
-| | مقیاس‌پذیری (NFR-002), امنیت (NFR-003) | پشتیبانی از پروژه‌های بزرگ با کنترل دسترسی امن |
-| **مدیریت وظایف (FR-002)** | کارایی (NFR-001), قابلیت استفاده (NFR-005) | رابط کاربری ساده برای مدیریت روزانه وظایف |
-| | سازگاری (NFR-006) | کارکرد صحیح در مرورگرهای مختلف |
-| **تخصیص منابع (FR-003)** | کارایی (NFR-001), مقیاس‌پذیری (NFR-002) | تخصیص منابع بهینه در پروژه‌های بزرگ |
-| | قابلیت اطمینان (NFR-004) | اطمینان از در دسترس بودن منابع |
-| **پیگیری پیشرفت (FR-004)** | کارایی (NFR-001), قابلیت استفاده (NFR-005) | گزارش‌های سریع و قابل فهم |
-| **مدیریت ریسک (FR-005)** | امنیت (NFR-003), قابلیت اطمینان (NFR-004) | حفاظت از داده‌های حساس ریسک |
-| **گزارش‌دهی (FR-006)** | کارایی (NFR-001), سازگاری (NFR-006) | تولید گزارش‌های سریع در فرمت‌های مختلف |
-| **همکاری تیمی (FR-007)** | قابلیت استفاده (NFR-005), امنیت (NFR-003) | رابط کاربری شهودی با کنترل دسترسی |
-| **یکپارچه‌سازی (FR-008)** | سازگاری (NFR-006), امنیت (NFR-003) | اتصال امن به سیستم‌های خارجی |
-
-### معماری یکپارچه برای اهداف
-
-```mermaid
-graph TB
-    subgraph "اهداف عملکردی"
-        A[مدیریت پروژه]
-        B[مدیریت وظیفه]
-        C[مدیریت منبع]
-        D[گزارش‌دهی]
-    end
-
-    subgraph "پشتیبانی غیرعملکردی"
-        E[کارایی]
-        F[امنیت]
-        G[مقیاس‌پذیری]
-        H[قابلیت اطمینان]
-    end
-
-    subgraph "لایه معماری"
-        I[کنترلرها]
-        J[سرویس‌ها]
-        K[ریپازیتوری‌ها]
-        L[کش و بهینه‌سازی]
-    end
-
-    A --> I
-    B --> I
-    C --> I
-    D --> I
-
-    E --> J
-    F --> J
-    G --> K
-    H --> L
-
-    I --> J
-    J --> K
-    K --> L
-```
-
-**توضیح یکپارچه‌سازی:**
-- **لایه کنترلرها**: پیاده‌سازی الزامات عملکردی با در نظر گرفتن کارایی و قابلیت استفاده
-- **لایه سرویس‌ها**: پشتیبانی از امنیت و قابلیت اطمینان در منطق کسب‌وکار
-- **لایه ریپازیتوری‌ها**: تضمین مقیاس‌پذیری در دسترسی به داده‌ها
-- **لایه بهینه‌سازی**: اطمینان از عملکرد بالا از طریق کش و فشرده‌سازی
-
----
-
-## معماری سیستم
-
-### دیاگرام اجزا
-
-```mermaid
-componentDiagram
-    [رابط کاربری] --> [کنترلر پروژه]
-    [رابط کاربری] --> [کنترلر وظیفه]
-    [رابط کاربری] --> [کنترلر منبع]
-    
-    [کنترلر پروژه] --> [سرویس پروژه]
-    [کنترلر وظیفه] --> [سرویس وظیفه]
-    [کنترلر منبع] --> [سرویس منبع]
-    
-    [سرویس پروژه] --> [ریپازیتوری پروژه]
-    [سرویس وظیفه] --> [ریپازیتوری وظیفه]
-    [سرویس منبع] --> [ریپازیتوری منبع]
-    
-    [ریپازیتوری پروژه] --> [فایل‌های JSON]
-    [ریپازیتوری وظیفه] --> [فایل‌های JSON]
-    [ریپازیتوری منبع] --> [فایل‌های JSON]
-
-    [سرویس احراز هویت] --> [فایل‌های JSON]
-    [سرویس اعلان] --> [فایل‌های JSON]
-    [سرویس فایل] --> [ذخیره‌سازی فایل]
-```
-
-### توضیح اجزا
-
-#### کنترلرها (Controllers)
-- **کنترلر پروژه**: مدیریت درخواست‌های مرتبط با پروژه‌ها
-- **کنترلر وظیفه**: مدیریت درخواست‌های مرتبط با وظایف
-- **کنترلر منبع**: مدیریت درخواست‌های مرتبط با منابع
-
-#### سرویس‌ها (Services)
-- **سرویس پروژه**: منطق کسب‌وکار مرتبط با پروژه‌ها
-- **سرویس وظیفه**: منطق کسب‌وکار مرتبط با وظایف
-- **سرویس منبع**: منطق کسب‌وکار مرتبط با منابع
-- **سرویس احراز هویت**: مدیریت احراز هویت و مجوزها
-- **سرویس اعلان**: ارسال اعلان‌ها به کاربران
-- **سرویس فایل**: مدیریت فایل‌های پیوست
-
-#### ریپازیتوری‌ها (Repositories)
-- **ریپازیتوری پروژه**: دسترسی به داده‌های پروژه‌ها
-- **ریپازیتوری وظیفه**: دسترسی به داده‌های وظایف
-- **ریپازیتوری منبع**: دسترسی به داده‌های منابع
-
-### دیاگرام بسته‌ها
-
-```mermaid
-graph TB
-    subgraph "لایه ارائه"
-        A[وب]
-        B[موبایل]
-        C[API]
-    end
-    
-    subgraph "لایه منطق"
-        D[مدیریت پروژه]
-        E[مدیریت وظیفه]
-        F[مدیریت منبع]
-        G[مدیریت ریسک]
-    end
-    
-    subgraph "لایه سرویس"
-        H[احراز هویت]
-        I[اعلان‌ها]
-        J[فایل‌ها]
-        K[یکپارچه‌سازی]
-    end
-    
-    subgraph "لایه داده"
-        L[فایل‌های JSON]
-        M[ذخیره‌سازی]
-        N[کش]
-    end
-    
-    A --> D
-    B --> D
-    C --> D
-    D --> H
-    E --> H
-    F --> H
-    G --> H
-    
-    D --> L
-    E --> L
-    F --> L
-    G --> L
-    
-    H --> I
-    I --> N
-    J --> M
-    K --> C
-```
-
----
-
-## مدل‌های داده
-
-#### دیاگرام ERD برای سازگاری با JSON
-
-```mermaid
-erDiagram
-    PROJECTS ||--o{ TASKS : contains
-    PROJECTS ||--o{ RESOURCES : allocates
-    PROJECTS ||--o{ RISKS : identifies
-    TASKS ||--o{ DEPENDENCIES : depends_on
-    TASKS ||--o{ COMMENTS : has
-    TASKS }o--|| USERS : assigned_to
-    RESOURCES }o--|| USERS : managed_by
-    PROJECTS }o--|| USERS : managed_by
-
-    PROJECTS {
-        string id PK
-        string name
-        string description
-        date start_date
-        date end_date
-        string status
-        string manager_id FK
-    }
-
-    TASKS {
-        string id PK
-        string name
-        string description
-        date start_date
-        date end_date
-        string status
-        string assigned_to FK
-        number progress
-        string project_id FK
-    }
-
-    RESOURCES {
-        string id PK
-        string name
-        string type
-        string description
-        number cost
-        string availability
-        string project_id FK
-    }
-
-    RISKS {
-        string id PK
-        string name
-        string description
-        string impact
-        string probability
-        string project_id FK
-    }
-
-    DEPENDENCIES {
-        string id PK
-        string task_id FK
-        string depends_on FK
-        string type
-    }
-
-    COMMENTS {
-        string id PK
-        string content
-        datetime created_at
-        string task_id FK
-        string user_id FK
-    }
-
-    USERS {
-        string id PK
-        string username
-        string email
-        string password
-        string role
-        string github_username
-    }
-```
-
-### طرحواره داده‌های JSON
-
-با توجه به استفاده از فایل‌های JSON برای ذخیره‌سازی داده‌ها، مدل داده‌ها به صورت طرحواره JSON تعریف می‌شود. ساختار داده‌ها به صورت زیر است:
-
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-    "projects": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "description": { "type": "string" },
-          "start_date": { "type": "string", "format": "date" },
-          "end_date": { "type": "string", "format": "date" },
-          "status": { "type": "string" },
-          "manager_id": { "type": "string" },
-          "tasks": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": { "type": "string" },
-                "name": { "type": "string" },
-                "description": { "type": "string" },
-                "start_date": { "type": "string", "format": "date" },
-                "end_date": { "type": "string", "format": "date" },
-                "status": { "type": "string" },
-                "assigned_to": { "type": "string" },
-                "progress": { "type": "integer" },
-                "dependencies": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "depends_on": { "type": "string" },
-                      "type": { "type": "string" }
-                    }
-                  }
-                },
-                "comments": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": { "type": "string" },
-                      "content": { "type": "string" },
-                      "created_at": { "type": "string", "format": "date-time" },
-                      "user_id": { "type": "string" }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "resources": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": { "type": "string" },
-                "name": { "type": "string" },
-                "type": { "type": "string" },
-                "description": { "type": "string" },
-                "cost": { "type": "number" },
-                "availability": { "type": "string" }
-              }
-            }
-          },
-          "risks": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": { "type": "string" },
-                "name": { "type": "string" },
-                "description": { "type": "string" },
-                "impact": { "type": "string" },
-                "probability": { "type": "string" }
-              }
-            }
-          }
-        },
-        "required": ["id", "name"]
-      }
-    },
-    "users": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "username": { "type": "string" },
-          "email": { "type": "string", "format": "email" },
-          "password": { "type": "string" },
-          "role": { "type": "string" }
-        },
-        "required": ["id", "username", "email"]
-      }
-    }
-  }
-}
-```
-
-### توضیح موجودیت‌ها
-
-#### پروژه (Project)
-- **شناسه**: شناسه یکتای پروژه
-- **نام**: نام پروژه
-- **توضیحات**: توضیحات کامل پروژه
-- **تاریخ شروع**: تاریخ شروع پروژه
-- **تاریخ پایان**: تاریخ پایان پیش‌بینی شده
-- **وضعیت**: وضعیت فعلی پروژه
-- **مدیر**: شناسه مدیر پروژه
-
-#### وظیفه (Task)
-- **شناسه**: شناسه یکتای وظیفه
-- **نام**: نام وظیفه
-- **توضیحات**: توضیحات وظیفه
-- **تاریخ شروع**: تاریخ شروع وظیفه
-- **تاریخ پایان**: تاریخ پایان وظیفه
-- **وضعیت**: وضعیت فعلی وظیفه
-- **پروژه**: شناسه پروژه مرتبط
-- **محول‌شده به**: شناسه کاربر محول‌شده
-- **پیشرفت**: درصد پیشرفت وظیفه
-
-#### منبع (Resource)
-- **شناسه**: شناسه یکتای منبع
-- **نام**: نام منبع
-- **نوع**: نوع منبع (انسانی، تجهیزات، ...)
-- **توضیحات**: توضیحات منبع
-- **هزینه**: هزینه منبع
-- **دسترسی**: وضعیت دسترسی منبع
-
-#### ریسک (Risk)
-- **شناسه**: شناسه یکتای ریسک
-- **نام**: نام ریسک
-- **توضیحات**: توضیحات ریسک
-- **تأثیر**: سطح تأثیر ریسک
-- **احتمال**: احتمال وقوع ریسک
-- **پروژه**: شناسه پروژه مرتبط
-
-### دیاگرام رابطه‌ها
-
-```mermaid
-graph LR
-    A[پروژه] --> B[وظایف]
-    A --> C[منابع]
-    A --> D[ریسک‌ها]
-    B --> E[وابستگی‌ها]
-    B --> F[کاربران]
-    B --> G[کامنت‌ها]
-    C --> F
-    D --> A
-    E --> B
-    F --> B
-    G --> B
-```
-
----
-
-## اجزا و ماژول‌ها
-
-### ماژول مدیریت پروژه
-
-#### دیاگرام اجزا
-
-```mermaid
-graph TB
-    subgraph "مدیریت پروژه"
-        A[ایجاد پروژه]
-        B[ویرایش پروژه]
-        C[حذف پروژه]
-        D[مشاهده پروژه]
-        E[تغییر وضعیت]
-        F[تخصیص مدیر]
-    end
-    
-    subgraph "زیرماژول‌ها"
-        G[مدیریت زمان‌بندی]
-        H[مدیریت بودجه]
-        I[مدیریت اعضا]
-        J[مدیریت اسناد]
-    end
-    
-    A --> G
-    B --> G
-    C --> G
+    D --> E
+    D --> F
     D --> G
-    E --> G
-    F --> I
-    
     G --> H
     H --> I
-    I --> J
+    H --> J
+    H --> K
+    H --> N
+    N --> L
+    I --> O
+    I --> P
 ```
 
-#### توضیح عملکرد
+### Component Architecture
 
-- **ایجاد پروژه**: ایجاد پروژه جدید با مشخصات کامل
-- **ویرایش پروژه**: تغییر مشخصات پروژه موجود
-- **حذف پروژه**: حذف پروژه و داده‌های مرتبط
-- **مشاهده پروژه**: نمایش اطلاعات کامل پروژه
-- **تغییر وضعیت**: تغییر وضعیت پروژه (فعال، متوقف، تمام‌شده)
-- **تخصیص مدیر**: تعیین مدیر برای پروژه
-
-### ماژول مدیریت وظایف
-
-#### دیاگرام اجزا
+#### Backend Components
 
 ```mermaid
 graph TB
-    subgraph "مدیریت وظایف"
-        A[ایجاد وظیفه]
-        B[ویرایش وظیفه]
-        C[حذف وظیفه]
-        D[پیگیری پیشرفت]
-        E[تخصیص منبع]
-        F[مدیریت وابستگی]
-    end
-    
-    subgraph "زیرماژول‌ها"
-        G[تقویم وظایف]
-        H[بورد کانبان]
-        I[نمودار گانت]
-        J[فیلترها]
-    end
-    
-    A --> G
-    B --> G
-    C --> G
-    D --> H
-    E --> I
-    F --> J
-    
-    G --> H
-    H --> I
-    I --> J
-```
-
-#### توضیح عملکرد
-
-- **ایجاد وظیفه**: ایجاد وظیفه جدید با مشخصات کامل
-- **ویرایش وظیفه**: تغییر مشخصات وظیفه موجود
-- **حذف وظیفه**: حذف وظیفه و داده‌های مرتبط
-- **پیگیری پیشرفت**: به‌روزرسانی پیشرفت وظیفه
-- **تخصیص منبع**: تخصیص منابع به وظیفه
-- **مدیریت وابستگی**: تعریف وابستگی بین وظایف
-
-### ماژول مدیریت منابع
-
-#### دیاگرام اجزا
-
-```mermaid
-graph TB
-    subgraph "مدیریت منابع"
-        A[ایجاد منبع]
-        B[ویرایش منبع]
-        C[حذف منبع]
-        D[تخصیص به وظیفه]
-        E[پیگیری در دسترس بودن]
-        F[گزارش مصرف]
-    end
-    
-    subgraph "زیرماژول‌ها"
-        G[تقویم منابع]
-        H[نمودار تخصیص]
-        I[هشدارها]
-        J[بهینه‌سازی]
-    end
-    
-    A --> G
-    B --> G
-    C --> G
-    D --> H
-    E --> I
-    F --> J
-    
-    G --> H
-    H --> I
-    I --> J
-```
-
-#### توضیح عملکرد
-
-- **ایجاد منبع**: ایجاد منبع جدید با مشخصات کامل
-- **ویرایش منبع**: تغییر مشخصات منبع موجود
-- **حذف منبع**: حذف منبع و داده‌های مرتبط
-- **تخصیص به وظیفه**: تخصیص منبع به وظایف
-- **پیگیری در دسترس بودن**: بررسی در دسترس بودن منبع
-- **گزارش مصرف**: گزارش مصرف منابع در پروژه‌ها
-
----
-
-## جریان داده و کنترل
-
-### جریان داده ایجاد پروژه
-
-```mermaid
-sequenceDiagram
-    participant کاربر
-    participant رابط_کاربری
-    participant کنترلر_پروژه
-    participant سرویس_پروژه
-    participant ریپازیتوری_پروژه
-    participant فایل‌های_JSON
-
-    کاربر->>رابط_کاربری: درخواست ایجاد پروژه
-    رابط_کاربری->>کنترلر_پروژه: ارسال داده‌های پروژه
-    کنترلر_پروژه->>سرویس_پروژه: اعتبارسنجی داده‌ها
-    سرویس_پروژه->>ریپازیتوری_پروژه: ذخیره پروژه
-    ریپازیتوری_پروژه->>فایل‌های_JSON: درج رکورد
-    فایل‌های_JSON-->>ریپازیتوری_پروژه: تأیید درج
-    ریپازیتوری_پروژه-->>سرویس_پروژه: شناسه پروژه
-    سرویس_پروژه-->>کنترلر_پروژه: تأیید عملیات
-    کنترلر_پروژه-->>رابط_کاربری: نتیجه عملیات
-    رابط_کاربری-->>کاربر: نمایش تأیید
-```
-
-### جریان کنترل تخصیص وظیفه
-
-```mermaid
-stateDiagram-v2
-    [*] --> شروع
-    شروع --> انتخاب_وظیفه
-    انتخاب_وظیفه --> انتخاب_منبع
-    انتخاب_منبع --> بررسی_دسترس_بودن
-    بررسی_دسترس_بودن --> در_دسترس_است؟
-    
-    در_دسترس_است؟ --> بله --> تخصیص_منبع
-    در_دسترس_است؟ --> خیر --> نمایش_خطا
-    
-    تخصیص_منبع --> به_روزرسانی_وظیفه
-    به_روزرسانی_وظیفه --> ارسال_اعلان
-    ارسال_اعلان --> پایان
-    پایان --> [*]
-    
-    نمایش_خطا --> انتخاب_منبع_دیگر
-    انتخاب_منبع_دیگر --> بررسی_دسترس_بودن
-```
-
-### دیاگرام جریان داده گزارش‌دهی
-
-```mermaid
-flowchart TD
-    A[درخواست گزارش] --> B{نوع گزارش}
-    B -->|پیشرفت پروژه| C[جمع‌آوری داده‌های پروژه]
-    B -->|مصرف منابع| D[جمع‌آوری داده‌های منابع]
-    B -->|ریسک‌ها| E[جمع‌آوری داده‌های ریسک]
-    
-    C --> F[پردازش داده‌ها]
-    D --> F
-    E --> F
-    
-    F --> G{قالب خروجی}
-    G -->|PDF| H[ایجاد PDF]
-    G -->|Excel| I[ایجاد Excel]
-    G -->|HTML| J[ایجاد HTML]
-    
-    H --> K[ارسال به کاربر]
-    I --> K
-    J --> K
-```
-
----
-
-## یکپارچه‌سازی با سیستم‌های خارجی
-
-### دیاگرام یکپارچه‌سازی با گیت‌هاب
-
-```mermaid
-graph TB
-    subgraph "GravityPM"
-        A[API یکپارچه‌سازی]
-        B[سرویس همگام‌سازی]
-        C[مدیریت اتصالات]
-        D[پردازشگر رویدادها]
-        E[موتور قوانین]
+    subgraph "FastAPI Application"
+        A[main.py]
+        B[routers/]
+        C[models/]
+        D[services/]
+        E[database.py]
     end
 
-    subgraph "گیت‌هاب"
-        F[وبهوک‌ها]
-        G[API گیت‌هاب]
-        H[کامیت‌ها]
-        I[ایسوزها]
-        J[پول ریکوئست‌ها]
+    subgraph "Routers"
+        F[auth.py]
+        G[projects.py]
+        H[tasks.py]
+        I[resources.py]
+        J[github_integration.py]
     end
 
-    A --> F
-    A --> G
-    B --> A
-    C --> A
-    D --> B
-    E --> D
-
-    F --> D
-    G --> B
-    H --> D
-    I --> D
-    J --> D
-```
-
-### جزئیات یکپارچه‌سازی با گیت‌هاب
-
-| مؤلفه | نقش | توضیح |
-|--------|------|-------|
-| API یکپارچه‌سازی | رابط اصلی | مدیریت ارتباطات با گیت‌هاب |
-| سرویس همگام‌سازی | همگام‌سازی داده‌ها | همگام‌سازی وظایف و پروژه‌ها |
-| مدیریت اتصالات | مدیریت توکن‌ها | مدیریت احراز هویت و اتصالات امن |
-| پردازشگر رویدادها | پردازش وبهوک‌ها | پردازش رویدادهای لحظه‌ای از گیت‌هاب |
-| موتور قوانین | تصمیم‌گیری خودکار | اجرای قوانین بر اساس رویدادهای گیت‌هاب |
-
-### دیاگرام توالی یکپارچه‌سازی با گیت‌هاب
-
-```mermaid
-sequenceDiagram
-    participant گیت‌هاب
-    participant GravityPM
-    participant فایل‌های_JSON
-    participant کاربر
-
-    گیت‌هاب->>GravityPM: ارسال رویداد Webhook
-    GravityPM->>GravityPM: پردازش رویداد
-    GravityPM->>فایل‌های_JSON: به‌روزرسانی وظیفه
-    فایل‌های_JSON-->>GravityPM: تأیید به‌روزرسانی
-    GravityPM->>کاربر: ارسال اعلان
-    کاربر-->>GravityPM: مشاهده تغییر
-```
-
----
-
-## امنیت
-
-### دیاگرام امنیتی
-
-```mermaid
-graph TB
-    subgraph "لایه‌های امنیتی"
-        A[احراز هویت]
-        B[مجوزها]
-        C[رمزنگاری]
-        D[لاگ‌برداری]
-        E[فایروال]
+    subgraph "Models"
+        K[user.py]
+        L[project.py]
+        M[task.py]
+        N[resource.py]
+        O[rule.py]
     end
 
-    subgraph "اجزای محافظت‌شده"
-        F[فایل‌های JSON]
-        G[API]
-        H[فایل‌ها]
-        I[شبکه]
-    end
-
-    A --> F
-    B --> G
-    C --> H
-    D --> F
-    E --> I
-```
-
-### مکانیزم‌های امنیتی
-
-#### احراز هویت
-- **ورود با نام کاربری و رمز عبور**
-- **احراز هویت دو مرحله‌ای**
-- **ورود با شبکه‌های اجتماعی**
-- **توکن‌های دسترسی موقت**
-
-#### مجوزها
-- **سطح دسترسی مبتنی بر نقش (RBAC)**
-- **دسترسی مبتنی بر ویژگی‌ها (ABAC)**
-- **مجوزهای دقیق برای عملیات**
-- ** inherited permissions**
-
-#### رمزنگاری
-- **رمزنگاری داده‌های حساس در حالت سکون**
-- **رمزنگاری ارتباطات با TLS**
-- **رمزنگاری فایل‌های پیوست**
-- **مدیریت کلید امن**
-
-#### لاگ‌برداری
-- **ثبت تمام عملیات حساس**
-- **ثبت تلاش‌های ناموفق ورود**
-- **ثبت تغییرات داده‌ها**
-- **نظارت بر فعالیت‌های مشکوک**
-
-### دیاگرام جریان امنیتی
-
-```mermaid
-flowchart TD
-    A[درخواست ورود] --> B{احراز هویت}
-    B -->|موفقیت| C[ایجاد نشست]
-    B -->|شکست| D[ثبت تلاش ناموفق]
-    
-    C --> E{بررسی مجوزها}
-    E -->|مجاز| F[اجازه دسترسی]
-    E -->|غیرمجاز| G[رد درخواست]
-    
-    F --> H[ثبت عملیات]
-    G --> I[ثبت رد دسترسی]
-    
-    H --> J[ارسال پاسخ]
-    I --> J
-```
-
----
-
-## عملکرد و مقیاس‌پذیری
-
-### دیاگرام مقیاس‌پذیری
-
-```mermaid
-graph TB
-    subgraph "لایه بارگذاری"
-        A[Load Balancer]
-    end
-
-    subgraph "سرورهای برنامه"
-        B[سرور 1]
-        C[سرور 2]
-        D[سرور N]
-    end
-
-    subgraph "لایه داده"
-        E[فایل‌های JSON اصلی]
-        F[فایل‌های JSON فقط-خواندنی]
-        G[کش]
+    subgraph "Services"
+        P[auth_service.py]
+        Q[github_service.py]
     end
 
     A --> B
     A --> C
     A --> D
-
-    B --> E
-    C --> E
-    D --> E
-
+    A --> E
     B --> F
-    C --> F
-    D --> F
-
     B --> G
-    C --> G
-    D --> G
+    B --> H
+    B --> I
+    B --> J
+    C --> K
+    C --> L
+    C --> M
+    C --> N
+    C --> O
+    D --> P
+    D --> Q
 ```
 
-### استراتژی‌های بهینه‌سازی
-
-#### بهینه‌سازی فایل‌های JSON
-- **ساختاردهی مناسب داده‌ها**
-- **بهینه‌سازی عملیات خواندن/نوشتن**
-- **فشرده‌سازی داده‌ها**
-- **تقسیم فایل‌های بزرگ**
-
-#### کش کردن داده‌ها
-- **کش کردن نتایج پرکاربرد**
-- **کش کردن داده‌های مرجع**
-- **کش کردن سشن‌های کاربران**
-- **پاک‌سازی خودکار کش**
-
-#### بهینه‌سازی شبکه
-- **فشرده‌سازی پاسخ‌ها**
-- **استفاده از CDN**
-- **بهینه‌سازی تصاویر**
-- **بارگذاری تنبل**
-
-### جدول معیارهای عملکرد
-
-| معیار | هدف | حداقل | بهینه |
-|-------|------|-------|-------|
-| زمان پاسخ API | < 200ms | < 500ms | < 100ms |
-| زمان بارگذاری صفحه | < 2s | < 3s | < 1s |
-| ظرفیت کاربر همزمان | 5000 | 2000 | 10000 |
-| زمان پردازش گزارش | < 10s | < 30s | < 5s |
-| uptime | 99.9% | 99% | 99.99% |
-
----
-
-## استقرار
-
-### دیاگرام استقرار
+#### Frontend Components
 
 ```mermaid
 graph TB
-    subgraph "لایه ارائه"
-        A[CDN]
-        B[Load Balancer]
+    subgraph "Next.js Application"
+        A[app/]
+        B[components/]
+        C[lib/]
+        D[types/]
+        E[utils/]
     end
 
-    subgraph "لایه برنامه"
-        C[سرورهای برنامه]
-        D[سرورهای API]
+    subgraph "App Router"
+        F[layout.tsx]
+        G[page.tsx]
+        H[loading.tsx]
+        I[error.tsx]
     end
 
-    subgraph "لایه داده"
-        E[فایل‌های JSON اصلی]
-        F[فایل‌های JSON ثانویه]
-        G[کش سرورها]
-        H[ذخیره‌سازی فایل‌ها]
+    subgraph "Components"
+        J[ProjectList]
+        K[TaskBoard]
+        L[UserProfile]
+        M[GitHubIntegration]
     end
 
-    subgraph "مانیتورینگ"
-        I[مانیتورینگ]
-        J[لاگ‌ها]
+    subgraph "Utilities"
+        N[API Client]
+        O[Auth Hooks]
+        P[Form Validation]
+        Q[Date Utils]
+    end
+
+    A --> F
+    A --> G
+    A --> H
+    A --> I
+    A --> J
+    A --> K
+    A --> L
+    A --> M
+    A --> N
+    A --> O
+    A --> P
+    A --> Q
+```
+
+## Data Flow
+
+### Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant Database
+
+    User->>Frontend: Login Request
+    Frontend->>Backend: POST /auth/login
+    Backend->>Database: Verify Credentials
+    Database-->>Backend: User Data
+    Backend-->>Frontend: JWT Token
+    Frontend-->>User: Login Success
+```
+
+### Project Management Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant Database
+    participant GitHub
+
+    User->>Frontend: Create Project
+    Frontend->>Backend: POST /projects
+    Backend->>Database: Save Project
+    Database-->>Backend: Project ID
+    Backend-->>GitHub: Create Repository (Optional)
+    GitHub-->>Backend: Repository Info
+    Backend-->>Frontend: Project Created
+    Frontend-->>User: Success Message
+```
+
+### GitHub Integration Flow
+
+```mermaid
+sequenceDiagram
+    participant GitHub
+    participant Backend
+    participant Database
+    participant Frontend
+
+    GitHub->>Backend: Webhook Event
+    Backend->>Backend: Validate Signature
+    Backend->>Backend: Process Event
+    Backend->>Database: Update Task Status
+    Database-->>Backend: Update Confirmation
+    Backend-->>GitHub: 200 OK
+    Backend->>Frontend: Real-time Update (WebSocket)
+```
+
+## Database Schema
+
+### User Collection
+```json
+{
+  "_id": ObjectId,
+  "username": "string",
+  "email": "string",
+  "full_name": "string",
+  "hashed_password": "string",
+  "role": "user|admin|manager",
+  "github_id": "string",
+  "disabled": false,
+  "created_at": DateTime,
+  "updated_at": DateTime
+}
+```
+
+### Project Collection
+```json
+{
+  "_id": ObjectId,
+  "name": "string",
+  "description": "string",
+  "owner_id": ObjectId,
+  "members": [ObjectId],
+  "status": "active|completed|archived",
+  "github_repo": "string",
+  "created_at": DateTime,
+  "updated_at": DateTime
+}
+```
+
+### Task Collection
+```json
+{
+  "_id": ObjectId,
+  "title": "string",
+  "description": "string",
+  "project_id": ObjectId,
+  "assignee_id": ObjectId,
+  "status": "todo|in_progress|review|done",
+  "priority": "low|medium|high",
+  "due_date": DateTime,
+  "github_issue_id": "string",
+  "created_at": DateTime,
+  "updated_at": DateTime
+}
+```
+
+## API Design
+
+### RESTful Endpoints
+
+#### Authentication
+- `POST /auth/login` - User login
+- `POST /auth/register` - User registration
+- `POST /auth/refresh` - Token refresh
+- `GET /auth/me` - Get current user
+
+#### Projects
+- `GET /projects` - List projects
+- `POST /projects` - Create project
+- `GET /projects/{id}` - Get project details
+- `PUT /projects/{id}` - Update project
+- `DELETE /projects/{id}` - Delete project
+
+#### Tasks
+- `GET /tasks` - List tasks
+- `POST /tasks` - Create task
+- `GET /tasks/{id}` - Get task details
+- `PUT /tasks/{id}` - Update task
+- `DELETE /tasks/{id}` - Delete task
+
+#### GitHub Integration
+- `POST /github/webhook` - GitHub webhook handler
+- `GET /github/repos` - Get user repositories
+- `POST /github/connect` - Connect GitHub account
+
+### Response Format
+
+#### Success Response
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": "Operation successful"
+}
+```
+
+#### Error Response
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input data",
+    "details": { ... }
+  }
+}
+```
+
+## Security Considerations
+
+### Authentication & Authorization
+- JWT-based authentication
+- Password hashing with bcrypt
+- Role-based access control (RBAC)
+- Token expiration and refresh
+
+### Data Protection
+- Input validation with Pydantic
+- SQL injection prevention (MongoDB)
+- XSS protection in frontend
+- CORS configuration
+
+### GitHub Integration Security
+- Webhook signature validation
+- GitHub token encryption
+- Rate limiting
+- Secure token storage
+
+## Deployment Architecture
+
+### Development Environment
+```mermaid
+graph TB
+    subgraph "Development"
+        A[Local Machine]
+        B[Next.js Dev Server :3000]
+        C[FastAPI Dev Server :8000]
+        D[MongoDB Local]
     end
 
     A --> B
-    B --> C
-    B --> D
-
-    C --> E
-    C --> F
-    C --> G
-    C --> H
-
-    D --> E
-    D --> F
-    D --> G
-    D --> H
-
-    C --> I
-    D --> I
-    E --> J
-    F --> J
-    G --> J
-    H --> J
+    A --> C
+    A --> D
 ```
 
-### محیط‌های استقرار
+### Production Environment
+```mermaid
+graph TB
+    subgraph "Production"
+        A[Load Balancer]
+        B[Next.js App]
+        C[FastAPI App]
+        D[MongoDB Cluster]
+        E[Redis Cache]
+    end
 
-#### محیط توسعه
-- **تعداد سرور**: 1
-- **پیکربندی**: minimal
-- **داده‌ها**: داده‌های تست
-- **دسترسی**: توسعه‌دهندگان
+    A --> B
+    A --> C
+    B --> C
+    C --> D
+    C --> E
+```
 
-#### محیط تست
-- **تعداد سرور**: 2
-- **پیکربندی**: مشابه تولید
-- **داده‌ها**: داده‌های تست واقعی
-- **دسترسی**: تیم تست و QA
+## Performance Optimization
 
-#### محیط تولید
-- **تعداد سرور**: 4+
-- **پیکربندی**: بهینه‌سازی شده
-- **داده‌ها**: داده‌های واقعی
-- **دسترسی**: تیم عملیات
+### Backend Optimizations
+- Asynchronous database operations
+- Connection pooling
+- Caching with Redis
+- Database indexing
+- API rate limiting
 
-### استراتژی استقرار
+### Frontend Optimizations
+- Code splitting
+- Image optimization
+- Lazy loading
+- Service worker caching
+- Bundle analysis
 
-#### استقرار پیوسته
-- **استفاده از CI/CD**
-- **تست‌های خودکار**
-- **استقرار تدریجی**
-- **قابلیت بازگشت سریع**
+## Monitoring & Logging
 
-#### مانیتورینگ و لاگ‌برداری
-- **نظارت بر عملکرد**
-- **نظارت بر سلامت سیستم**
-- **لاگ‌برداری متمرکز**
-- **هشدارهای خودکار**
+### Application Monitoring
+- Health check endpoints
+- Performance metrics
+- Error tracking
+- Database monitoring
 
-#### پشتیبان‌گیری و بازیابی
-- **پشتیبان‌گیری منظم**
-- **پشتیبان‌گیری در مکان‌های مختلف**
-- **تست بازیابی**
-- **برنامه بازیابی بلایا**
+### Logging Strategy
+- Structured logging
+- Log levels (DEBUG, INFO, WARNING, ERROR)
+- Centralized log aggregation
+- Log retention policies
 
----
+## Conclusion
 
-## نتیجه‌گیری
-
-GravityPM یک نرم‌افزار مدیریت پروژه جامع است که با معماری مدرن و ماژولار طراحی شده است. این سیستم با تمرکز بر شفافیت، کارایی و همکاری تیمی، ابزارهای کاملی برای مدیریت پروژه‌های پیچیده فراهم می‌کند.
-
-### نقاط قوت معماری
-- **معماری چندلایه**: جداسازی وظایف و قابلیت نگهداری بالا
-- **قابلیت توسعه**: امکان افزودن قابلیت‌های جدید بدون تأثیر بر سیستم موجود
-- **امنیت لایه‌ای**: حفاظت از داده‌ها در تمام سطوح
-- **مقیاس‌پذیری**: توانایی مدیریت رشد کاربران و داده‌ها
-- **یکپارچه‌سازی**: امکان اتصال به ابزارهای خارجی
-
-### چالش‌ها و راهکارها
-- **پیچیدگی مدیریت**: استفاده از طراحی ماژولار و مستندات کامل
-- **عملکرد در مقیاس بزرگ**: بهینه‌سازی فایل‌های JSON و کش کردن داده‌ها
-- **امنیت داده‌ها**: پیاده‌سازی لایه‌های امنیتی متعدد
-- **یکپارچه‌سازی با سیستم‌های قدیمی**: استفاده از APIهای استاندارد
-
-### مسیر آینده
-- **افزودن هوش مصنوعی**: برای پیش‌بینی ریسک‌ها و بهینه‌سازی منابع
-- **گسترش موبایل**: توسعه برنامه‌های موبایل بومی
-- **بهبود تجربه کاربری**: طراحی رابط‌های کاربری پیشرفته‌تر
-- **افزایش یکپارچه‌سازی**: اتصال به سیستم‌های بیشتر
-
-این سند طراحی معماری یک چارچوب جامع برای توسعه و استقرار نرم‌افزار GravityPM فراهم می‌کند و با رعایت اصول طراحی مدرن، تضمین می‌کند که سیستم پایدار، امن و قابل توسعه خواهد بود.
+The GravityPM architecture provides a scalable, maintainable, and secure foundation for project management with seamless GitHub integration. The separation of concerns between frontend and backend, combined with modern technologies, ensures high performance and developer productivity.

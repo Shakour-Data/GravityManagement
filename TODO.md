@@ -1,4 +1,5 @@
-# GravityPM Development Plan
+
+کامیت و پوش کردن با پیام های مناسب(هر فایل به صورت جداگانه)# GravityPM Development Plan
 
 ## Phase 1: Planning and Documentation (100% Complete)
 - [x] Define project requirements and scope
@@ -39,10 +40,12 @@
   - [ ] Implement business logic services
   - [ ] Add validation and error handling
   - [ ] Implement caching layer
-- [ ] Implement GitHub integration
-  - [ ] Webhook processing logic
-  - [ ] API calls for repository management
-  - [ ] Event-driven rule processing
+- [x] Implement GitHub integration
+  - [x] Webhook processing logic
+  - [x] API calls for repository management
+  - [x] Event-driven rule processing
+  - [x] Rule engine service for automation
+  - [x] Rules CRUD API endpoints
 - [ ] Add backend testing
   - [ ] Unit tests for models and services
   - [ ] Integration tests for API endpoints

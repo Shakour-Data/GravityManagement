@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 from fastapi import APIRouter, Request, Depends, HTTPException
 from ..database import get_database
 from ..models.user import User
@@ -11,14 +11,15 @@ router = APIRouter()
 async def github_webhook(request: Request):
     payload = await request.json()
     event_type = request.headers.get("X-GitHub-Event")
-    
+    signature = request.headers.get("X-Hub-Signature-256")
+
     if not event_type:
         raise HTTPException(status_code=400, detail="Missing GitHub event type")
-    
-    # Process the webhook
-    await process_github_webhook(event_type, payload)
-    
-    return {"message": "Webhook processed"}
+
+    # Process the webhook with signature verification
+    result = await process_github_webhook(event_type, payload, signature)
+
+    return result
 
 @router.get("/repos", response_model=List[Dict[str, Any]])
 async def get_user_repos(current_user: User = Depends(get_current_user)):

@@ -9,6 +9,7 @@ class ResourceType(str, Enum):
     FINANCIAL = "financial"
 
 class Resource(BaseModel):
+    id: Optional[str] = None
     name: str
     type: ResourceType
     description: Optional[str] = None
@@ -18,6 +19,12 @@ class Resource(BaseModel):
     availability: bool = True
     created_at: datetime = datetime.utcnow()
     updated_at: datetime = datetime.utcnow()
+
+    class Config:
+        allow_population_by_field_name = True
+        fields = {
+            'id': '_id'
+        }
 
 class ResourceCreate(BaseModel):
     name: str

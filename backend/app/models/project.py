@@ -11,6 +11,7 @@ class ProjectStatus(str, Enum):
     CANCELLED = "cancelled"
 
 class Project(BaseModel):
+    id: Optional[str] = None
     name: str
     description: Optional[str] = None
     status: ProjectStatus = ProjectStatus.PLANNING
@@ -22,6 +23,12 @@ class Project(BaseModel):
     team_members: List[str] = []  # List of user IDs
     created_at: datetime = datetime.utcnow()
     updated_at: datetime = datetime.utcnow()
+
+    class Config:
+        allow_population_by_field_name = True
+        fields = {
+            'id': '_id'
+        }
 
 class ProjectCreate(BaseModel):
     name: str

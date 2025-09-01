@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 class User(BaseModel):
+    id: Optional[str] = None
     username: str
     email: EmailStr
     full_name: Optional[str] = None
@@ -10,7 +11,13 @@ class User(BaseModel):
     role: str = "user"  # user, admin, manager
     github_id: Optional[str] = None
     created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    updated_at: datetime.utcnow()
+
+    class Config:
+        allow_population_by_field_name = True
+        fields = {
+            'id': '_id'
+        }
 
 class UserInDB(User):
     hashed_password: str

@@ -1,5 +1,6 @@
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from fastapi import HTTPException
 from ..database import get_database
 from ..models.resource import Resource, ResourceCreate, ResourceUpdate, ResourceType
 from ..models.user import User

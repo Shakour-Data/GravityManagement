@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, projects, tasks, resources, github_integration
+from .routers import auth, projects, tasks, resources, github_integration, rules
 from .database import connect_to_mongo, close_mongo_connection
 
 app = FastAPI(title="GravityPM API", version="1.0.0")
@@ -28,6 +28,7 @@ app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(projects.router, prefix="/projects", tags=["Projects"])
 app.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
 app.include_router(resources.router, prefix="/resources", tags=["Resources"])
+app.include_router(rules.router, prefix="/rules", tags=["Rules"])
 app.include_router(github_integration.router, prefix="/github", tags=["GitHub Integration"])
 
 @app.get("/")

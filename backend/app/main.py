@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import auth, projects, tasks, resources, github_integration, rules
 from .database import connect_to_mongo, close_mongo_connection
+from .services.cache_service import cache_service
 
 app = FastAPI(title="GravityPM API", version="1.0.0")
 
@@ -18,6 +19,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     await connect_to_mongo()
+    await cache_service.initialize()
 
 @app.on_event("shutdown")
 async def shutdown_event():

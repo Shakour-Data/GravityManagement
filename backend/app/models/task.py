@@ -10,6 +10,7 @@ class TaskStatus(str, Enum):
     BLOCKED = "blocked"
 
 class Task(BaseModel):
+    id: Optional[str] = None
     title: str
     description: Optional[str] = None
     project_id: str
@@ -17,7 +18,13 @@ class Task(BaseModel):
     status: TaskStatus = TaskStatus.TODO
     due_date: Optional[datetime] = None
     created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    updated_at: datetime.utcnow()
+
+    class Config:
+        allow_population_by_field_name = True
+        fields = {
+            'id': '_id'
+        }
 
 class TaskCreate(BaseModel):
     title: str

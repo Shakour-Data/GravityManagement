@@ -94,6 +94,27 @@ class CacheService:
                 return True
             return False
 
+    async def exists(self, key: str) -> bool:
+        """
+        Check if key exists in cache
+        """
+        if self.use_redis and self.redis_client:
+            try:
+                return await self.redis_client.exists(key) > 0
+            except Exception as e:
+                print(f"Redis exists error: {e}")
+                return False
+        else:
+            # Use memory cache
+            cache_entry = self.memory_cache.get(key)
+            if cache_entry:
+                if datetime.utcnow() < cache_entry['expires_at']:
+                    return True
+                else:
+                    # Remove expired entry
+                    del self.memory_cache[key]
+            return False
+
     async def clear_pattern(self, pattern: str) -> int:
         """
         Clear all keys matching a pattern

@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { Form, FormField } from '@/components/forms'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
+import { apiClient } from '@/lib/api'
 
 const registerSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -29,11 +30,9 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      // TODO: Implement registration logic with backend
-      console.log('Registration data:', data)
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Implement registration logic with backend
+      const { confirmPassword, ...registerData } = data
+      await apiClient.register(registerData)
 
       // On success, redirect to login
       router.push('/auth/login?message=Registration successful')

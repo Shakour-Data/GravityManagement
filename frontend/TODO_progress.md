@@ -1,83 +1,51 @@
-# Frontend Development Progress
+# TODO Progress for Frontend Development (TODO_dev02.md)
 
-## Completed Tasks ✅
-
-### 1. Project Setup
-- [x] Set up ESLint configuration (.eslintrc.json)
-- [x] Set up Prettier configuration (.prettierrc)
-- [x] Configure i18n for bilingual support (Persian/English) - Translation files exist, Header has language switcher
-- [x] Set up additional dependencies (react-hook-form, zod, @hookform/resolvers)
-- [x] Create comprehensive .gitignore file
-- [ ] Remove node_modules from git tracking
-
-### 2. UI Components
-- [x] Create Button component
-- [x] Create Input component
-- [x] Create Card component
-- [x] Create Badge component
-- [x] Create Avatar component
-- [x] Create Progress component
-- [x] Create Alert component
-- [x] Create Modal component
-- [x] Create Tooltip component
-- [x] Create Table component
-- [x] Create Select component
-- [x] Create Checkbox component
-- [x] Create Radio component
-- [x] Create Switch component
-- [x] Create Label component
-
-### 3. Layout Components
-- [x] Create Header component with language switcher
-- [x] Create Sidebar component (responsive)
-- [x] Create Footer component
-- [x] Create Breadcrumb component
-- [x] Create Tabs component
-
-### 4. Form Components
-- [x] Create Form wrapper component
-- [x] Create FormField component
-- [x] Create Validation components
-- [x] Create DatePicker component
-- [x] Create FileUpload component
-
-### 5. Pages and Views
-
-#### 5.1 Authentication
+## Completed Tasks
+- [x] Set up ESLint and Prettier
+- [x] Create reusable UI components (Button, Input, etc.)
+- [x] Implement layout components (Header, Sidebar, Footer)
+- [x] Create form components (Form, FormField, Validation, DatePicker, FileUpload)
+- [x] Implement data display components (Tables, Charts)
 - [x] Create login page
-- [x] Create register page
-- [ ] Implement authentication flow (needs API integration)
-- [ ] Add form validation (basic validation implemented)
+- [x] Create registration page
+- [x] Implement authentication flow (API integration)
+- [x] Create main dashboard page
+- [x] Implement project overview widgets (with API hooks)
+- [x] Add activity feed
+- [x] Create charts and graphs
+- [x] Add GitHub integration display
+- [x] Create project list page
+- [x] Implement project creation/editing forms
+- [x] Add project details view
+- [x] Implement WBS (Work Breakdown Structure) visualization
+- [x] Create task list page
+- [x] Implement task creation/editing forms
+- [x] Add task details view
+- [x] Implement task progress tracking
+- [x] Set up API client (axios/fetch)
+- [x] Implement authentication with backend (login/register API calls)
+- [x] Create API hooks for data fetching (useDashboardStats, useProjects, useTasks)
+- [x] Add error handling for API calls (in hooks and pages)
 
-## In Progress 🚧
-
-### 6. API Integration
-- [ ] Set up API client (axios/fetch)
-- [ ] Implement authentication with backend
-- [ ] Create API hooks for data fetching
-- [ ] Add error handling for API calls
+## Remaining Tasks
+- [x] Add task board (Kanban view)
+- [x] Implement task dependencies visualization
+- [x] Create resource allocation page
+- [x] Implement resource assignment interface
+- [x] Add resource utilization charts
+- [x] Create rules management page
+- [x] Implement rule creation/editing interface
+- [x] Add rule testing interface
 - [ ] Implement real-time updates (WebSocket/SSE)
 
-### 7. Remaining Pages
-- [ ] Create main dashboard page (basic structure created)
-- [ ] Implement project overview widgets
-- [ ] Add activity feed
-- [ ] Create charts and graphs
-- [ ] Add GitHub integration display
-
-## Next Steps 📋
-
-1. Set up API client and authentication
-2. Complete dashboard with real data
-3. Create project management pages
-4. Create task management pages
-5. Add responsive design and accessibility
-6. Implement GitHub integration UI
-7. Add testing and optimization
-
-## Notes
-- Form components created with react-hook-form and zod validation
-- Basic authentication pages created (need API integration)
-- Dashboard page has mock data structure
-- i18n is configured but needs to be integrated with pages
-- Need to create proper routing structure
+## Implementation Steps
+1. [x] Create TaskBoard component (frontend/components/TaskBoard.tsx)
+2. [x] Create task board page (frontend/app/tasks/board.tsx)
+3. [x] Update tasks/page.tsx to add board toggle
+4. [x] Create TaskDependencies component (frontend/components/TaskDependencies.tsx)
+5. [x] Integrate dependencies into task detail page (frontend/app/tasks/[id]/page.tsx)
+6. [x] Create resources page (frontend/app/resources/page.tsx) with allocation, assignment, charts
+7. [x] Create rules page (frontend/app/rules/page.tsx) with management, creation, editing, testing
+8. [ ] Enhance real-time updates in hooks (frontend/lib/hooks.ts) and api (frontend/lib/api.ts)
+9. [x] Update navigation components (e.g., Sidebar) to include new pages
+10. [ ] Test all new features and fix any issues

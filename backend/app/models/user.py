@@ -1,14 +1,14 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator, Field
 from typing import Optional
 from datetime import datetime
 
 class User(BaseModel):
     id: Optional[str] = None
-    username: str
+    username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
-    full_name: Optional[str] = None
+    full_name: Optional[str] = Field(None, min_length=2, max_length=100)
     disabled: Optional[bool] = False
-    role: str = "user"  # user, admin, manager
+    role: str = Field("user", regex="^(user|admin|manager)$")  # user, admin, manager
     github_id: Optional[str] = None
     created_at: datetime = datetime.utcnow()
     updated_at: datetime.utcnow()
@@ -19,18 +19,39 @@ class User(BaseModel):
             'id': '_id'
         }
 
+    @validator('username')
+    def username_alphanumeric(cls, v):
+        if not v.replace('_', '').replace('-', '').isalnum():
+            raise ValueError('Username must be alphanumeric with optional underscores or hyphens')
+        return v
+
+    @validator('role')
+    def role_valid(cls, v):
+        if v not in ['user', 'admin', 'manager']:
+            raise ValueError('Role must be one of: user, admin, manager')
+        return v
+
 class UserInDB(User):
     hashed_password: str
 
 class UserCreate(BaseModel):
-    username: str
+    username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
-    password: str
-    full_name: Optional[str] = None
+    password: str = Field(..., min_length=8)
+    full_name: Optional[str] = Field(None, min_length=2, max_length=100)
+
+    @validator('password')
+    def password_strength(cls, v):
+        has_upper = any(c.isupper() for c in v)
+        has_lower = any(c.islower() for c in v)
+        has_digit = any(c.isdigit() for c in v)
+        if not (has_upper and has_lower and has_digit):
+            raise ValueError('Password must contain at least one uppercase, one lowercase, and one digit')
+        return v
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
-    full_name: Optional[str] = None
+    full_name: Optional[str] = Field(None, min_length=2, max_length=100)
     disabled: Optional[bool] = None
 
 class Token(BaseModel):

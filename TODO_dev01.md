@@ -7,8 +7,8 @@
 ## 2. Backend Development (Remaining Tasks)
 
 ### 2.1 Database and Models
-- [ ] Implement data validation and constraints
-- [ ] Set up database indexing for performance
+- [x] Implement data validation and constraints
+- [x] Set up database indexing for performance
 
 ### 2.2 Authentication and Security
 - [ ] Add OAuth integration with GitHub

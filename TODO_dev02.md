@@ -7,7 +7,7 @@
 ## 3. Frontend Development (Remaining Tasks)
 
 ### 3.1 Project Setup
-- [ ] Set up ESLint and Prettier
+- [x] Set up ESLint and Prettier
 
 ### 3.2 UI Components
 - [ ] Create reusable UI components (Button, Input, etc.)

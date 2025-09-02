@@ -3,29 +3,29 @@
 ## 1. Project Setup
 - [x] Set up ESLint configuration (.eslintrc.json)
 - [x] Set up Prettier configuration (.prettierrc)
-- [x] Configure i18n for bilingual support (Persian/English)
-- [x] Set up additional dependencies if needed
+- [ ] Configure i18n for bilingual support (Persian/English)
+- [x] Set up additional dependencies if needed (installed via npm)
 - [x] Create comprehensive .gitignore file
-- [x] Remove node_modules from git tracking
+- [ ] Remove node_modules from git tracking
 
 ## 2. UI Components (following design system)
 - [x] Create Button component
 - [x] Create Input component
 - [x] Create Card component
-- [x] Create Badge component
+- [ ] Create Badge component
 - [x] Create Avatar component
-- [x] Create Progress component
-- [x] Create Alert component
-- [x] Create Modal component
-- [x] Create Tooltip component
-- [x] Create Table component
-- [x] Create Select component
-- [x] Create Checkbox component
-- [x] Create Radio component
-- [x] Create Switch component
+- [ ] Create Progress component
+- [ ] Create Alert component
+- [ ] Create Modal component
+- [ ] Create Tooltip component
+- [ ] Create Table component
+- [ ] Create Select component
+- [ ] Create Checkbox component
+- [ ] Create Radio component
+- [ ] Create Switch component
 
 ## 3. Layout Components
-- [ ] Create Header component with language switcher
+- [x] Create Header component with language switcher
 - [ ] Create Sidebar component (responsive)
 - [ ] Create Footer component
 - [ ] Create Breadcrumb component

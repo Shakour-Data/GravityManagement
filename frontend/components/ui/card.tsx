@@ -15,3 +15,5 @@ export const Card: React.FC<CardProps> = ({ children, className = '', ...props }
     </div>
   )
 }
+
+Card.displayName = 'Card'

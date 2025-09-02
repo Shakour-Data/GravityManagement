@@ -11,6 +11,13 @@
 - Maintenance and Support: 0%
 - Future Enhancements: 0%
 
+### Resource Allocation
+- **Developer 01 (TODO_dev01.md)**: Backend Development (Branch: feature/backend-enhancements)
+- **Developer 02 (TODO_dev02.md)**: Frontend Development (Branch: feature/frontend-development)
+- **Developer 03 (TODO_dev03.md)**: Testing, Deployment & Operations (Branch: feature/testing-deployment)
+
+**Note**: Each developer works on separate branches with no file overlap or dependencies between their work areas.
+
 ## 1. Project Setup and Planning
 - [x] Define project requirements and objectives
 - [x] Create project documentation (Implementation_doc.md, Process_doc.md, etc.)

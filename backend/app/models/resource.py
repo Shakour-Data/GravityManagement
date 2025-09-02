@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -44,11 +44,10 @@ class Resource(BaseModel):
     created_at: datetime = datetime.utcnow()
     updated_at: datetime = datetime.utcnow()
 
-    class Config:
-        allow_population_by_field_name = True
-        fields = {
-            'id': '_id'
-        }
+    model_config = ConfigDict(populate_by_name=True)
+
+    # In Pydantic v2, field aliasing is done differently
+    # id field will be mapped to _id in MongoDB via custom serialization
 
 class ResourceCreate(BaseModel):
     name: str

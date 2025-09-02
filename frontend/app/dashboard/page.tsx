@@ -2,13 +2,16 @@
 
 import React from 'react'
 import { useTranslation } from 'next-i18next'
+import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
-import { Calendar, Users, Folder, CheckCircle, Loader2 } from 'lucide-react'
-import { useDashboardStats, useProjects, useTasks } from '@/lib/hooks'
+import { Calendar, Users, Folder, CheckCircle, Loader2, TrendingUp, BarChart3 } from 'lucide-react'
+import { useDashboardStats, useProjects, useTasks, useGitHubData } from '@/lib/hooks'
+import { Chart } from '@/components/ui/chart'
+import { GitHubIntegration } from '@/components/GitHubIntegration'
 
 export default function DashboardPage() {
   const { t } = useTranslation('common')
@@ -17,6 +20,7 @@ export default function DashboardPage() {
   const { data: statsData, loading: statsLoading, error: statsError } = useDashboardStats()
   const { data: projectsData, loading: projectsLoading, error: projectsError } = useProjects()
   const { data: tasksData, loading: tasksLoading, error: tasksError } = useTasks()
+  const { data: githubData, loading: githubLoading, error: githubError } = useGitHubData()
 
   // Process stats data
   const stats = statsData ? [
@@ -27,18 +31,22 @@ export default function DashboardPage() {
   ] : []
 
   // Process recent projects (take first 3)
-  const recentProjects = projectsData?.slice(0, 3).map(project => ({
-    name: project.name,
-    progress: project.progress || 0,
-    status: project.status || 'Unknown'
-  })) || []
+  const recentProjects = Array.isArray(projectsData)
+    ? projectsData.slice(0, 3).map((project: any) => ({
+        name: project.name,
+        progress: project.progress || 0,
+        status: project.status || 'Unknown',
+      }))
+    : []
 
   // Process recent tasks (take first 3)
-  const recentTasks = tasksData?.slice(0, 3).map(task => ({
-    name: task.name,
-    priority: task.priority || 'Medium',
-    status: task.status || 'Todo'
-  })) || []
+  const recentTasks = Array.isArray(tasksData)
+    ? tasksData.slice(0, 3).map((task: any) => ({
+        name: task.name,
+        priority: task.priority || 'Medium',
+        status: task.status || 'Todo',
+      }))
+    : []
 
   return (
     <div className="p-6">
@@ -89,9 +97,11 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-          <Button className="mt-4 w-full" variant="outline">
-            View All Projects
-          </Button>
+          <Link href="/projects">
+            <Button className="mt-4 w-full" variant="outline">
+              View All Projects
+            </Button>
+          </Link>
         </Card>
 
         {/* Recent Tasks */}
@@ -108,8 +118,8 @@ export default function DashboardPage() {
                         task.priority === 'High'
                           ? 'destructive'
                           : task.priority === 'Medium'
-                          ? 'default'
-                          : 'secondary'
+                            ? 'default'
+                            : 'secondary'
                       }
                     >
                       {task.priority}
@@ -124,6 +134,73 @@ export default function DashboardPage() {
             View All Tasks
           </Button>
         </Card>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        {/* Project Progress Chart */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center">
+              <TrendingUp className="h-5 w-5 mr-2" />
+              {t('charts.projectProgress', 'Project Progress')}
+            </h2>
+            <BarChart3 className="h-5 w-5 text-gray-500" />
+          </div>
+          {Array.isArray(projectsData) && projectsData.length > 0 ? (
+            <Chart
+              data={projectsData.slice(0, 5).map((project: any) => ({
+                name: project.name?.substring(0, 15) + (project.name?.length > 15 ? '...' : ''),
+                progress: project.progress || 0
+              }))}
+              type="bar"
+              dataKey="progress"
+              title=""
+              height={250}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-48 text-gray-500">
+              {t('charts.noData', 'No data available')}
+            </div>
+          )}
+        </Card>
+
+        {/* Task Status Chart */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2" />
+              {t('charts.taskStatus', 'Task Status')}
+            </h2>
+            <BarChart3 className="h-5 w-5 text-gray-500" />
+          </div>
+          {Array.isArray(tasksData) && tasksData.length > 0 ? (
+            <Chart
+              data={[
+                { name: t('status.todo', 'To Do'), value: tasksData.filter((task: any) => task.status === 'todo').length },
+                { name: t('status.inProgress', 'In Progress'), value: tasksData.filter((task: any) => task.status === 'in_progress').length },
+                { name: t('status.done', 'Done'), value: tasksData.filter((task: any) => task.status === 'done').length },
+              ]}
+              type="pie"
+              dataKey="value"
+              title=""
+              height={250}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-48 text-gray-500">
+              {t('charts.noData', 'No data available')}
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* GitHub Integration */}
+      <div className="mt-6">
+        <GitHubIntegration
+          data={githubData}
+          loading={githubLoading}
+          error={githubError}
+        />
       </div>
 
       {/* Activity Feed */}

@@ -39,18 +39,18 @@
 - [x] Implement task creation/editing forms
 - [x] Add task details view
 - [x] Implement task progress tracking
-- [ ] Add task board (Kanban view)
+- [x] Add task board (Kanban view)
 - [x] Implement task dependencies visualization
 
 #### 3.3.5 Resource Management
-- [ ] Create resource allocation page
-- [ ] Implement resource assignment interface
-- [ ] Add resource utilization charts
+- [x] Create resource allocation page
+- [x] Implement resource assignment interface
+- [x] Add resource utilization charts
 
 #### 3.3.6 Rules and Automation
-- [ ] Create rules management page
-- [ ] Implement rule creation/editing interface
-- [ ] Add rule testing interface
+- [x] Create rules management page
+- [x] Implement rule creation/editing interface
+- [x] Add rule testing interface
 
 ### 3.4 API Integration
 - [x] Set up API client (axios/fetch)

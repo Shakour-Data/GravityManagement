@@ -83,6 +83,31 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'DELETE' })
   }
 
+  // WebSocket connection method
+  connectWebSocket(endpoint: string, onMessage: (data: any) => void, onError: (error: Event) => void, onClose: (event: CloseEvent) => void): WebSocket {
+    const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'}${endpoint}`
+    const ws = new WebSocket(wsUrl)
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data)
+        onMessage(message)
+      } catch (err) {
+        console.error('Failed to parse WebSocket message:', err)
+      }
+    }
+
+    ws.onerror = (event) => {
+      onError(event)
+    }
+
+    ws.onclose = (event) => {
+      onClose(event)
+    }
+
+    return ws
+  }
+
   // Auth-specific methods
   async login(credentials: { email: string; password: string }) {
     const response = await this.post('/auth/login', credentials)

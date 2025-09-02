@@ -397,31 +397,204 @@ export function useDeleteProject() {
 export function useRealtimeUpdates(endpoint: string) {
   const [data, setData] = useState<any>(null)
   const [connected, setConnected] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // For now, implement polling as fallback
-    // In production, this would use WebSocket or SSE
-    const pollData = async () => {
-      try {
-        const response = await apiClient.get(endpoint)
-        setData(response.data)
+    let ws: WebSocket | null = null
+    let reconnectTimeout: NodeJS.Timeout | null = null
+    const maxReconnectAttempts = 5
+    let reconnectAttempts = 0
+
+    const connect = () => {
+      if (reconnectAttempts >= maxReconnectAttempts) {
+        setError('Max reconnection attempts reached')
+        return
+      }
+
+      const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'}${endpoint}`
+      ws = new WebSocket(wsUrl)
+
+      ws.onopen = () => {
         setConnected(true)
-      } catch (error) {
+        setError(null)
+        reconnectAttempts = 0
+        console.log('WebSocket connected')
+      }
+
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data)
+          setData(message)
+        } catch (err) {
+          console.error('Failed to parse WebSocket message:', err)
+        }
+      }
+
+      ws.onclose = (event) => {
         setConnected(false)
-        console.error('Realtime update failed:', error)
+        console.log('WebSocket disconnected:', event.code, event.reason)
+
+        if (event.code !== 1000) { // Not a normal closure
+          reconnectAttempts++
+          reconnectTimeout = setTimeout(connect, 2000 * reconnectAttempts) // Exponential backoff
+        }
+      }
+
+      ws.onerror = (event) => {
+        setError('WebSocket error')
+        console.error('WebSocket error:', event)
       }
     }
 
-    pollData()
-    const interval = setInterval(pollData, 30000) // Poll every 30 seconds
+    connect()
 
-    return () => clearInterval(interval)
+    return () => {
+      if (ws) {
+        ws.close(1000, 'Component unmounting')
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout)
+      }
+    }
   }, [endpoint])
 
-  return { data, connected }
+  return { data, connected, error }
 }
 
 // GitHub integration hook
 export function useGitHubData() {
   return useApi<GitHubData>('/github/integration')
+}
+
+// Rules hooks
+export function useRules() {
+  return useApi('/rules')
+}
+
+export function useRule(id: string) {
+  return useApi(`/rules/${id}`, { enabled: !!id })
+}
+
+export function useCreateRule() {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (data: any) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.post('/rules', data)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
+export function useUpdateRule(id: string) {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (data: any) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.put(`/rules/${id}`, data)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
+export function useDeleteRule() {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (id: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.delete(`/rules/${id}`)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
+export function useTestRule(id: string) {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (ruleId: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.post(`/rules/${ruleId}/test`)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
 }

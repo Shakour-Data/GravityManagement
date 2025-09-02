@@ -28,14 +28,14 @@
 - [x] Add error handling for API calls (in hooks and pages)
 
 ## Remaining Tasks
-- [ ] Add task board (Kanban view)
+- [x] Add task board (Kanban view)
 - [x] Implement task dependencies visualization
 - [x] Create resource allocation page
 - [x] Implement resource assignment interface
 - [x] Add resource utilization charts
-- [ ] Create rules management page
-- [ ] Implement rule creation/editing interface
-- [ ] Add rule testing interface
+- [x] Create rules management page
+- [x] Implement rule creation/editing interface
+- [x] Add rule testing interface
 - [ ] Implement real-time updates (WebSocket/SSE)
 
 ## Implementation Steps
@@ -45,7 +45,7 @@
 4. [x] Create TaskDependencies component (frontend/components/TaskDependencies.tsx)
 5. [x] Integrate dependencies into task detail page (frontend/app/tasks/[id]/page.tsx)
 6. [x] Create resources page (frontend/app/resources/page.tsx) with allocation, assignment, charts
-7. [ ] Create rules page (frontend/app/rules/page.tsx) with management, creation, editing, testing
+7. [x] Create rules page (frontend/app/rules/page.tsx) with management, creation, editing, testing
 8. [ ] Enhance real-time updates in hooks (frontend/lib/hooks.ts) and api (frontend/lib/api.ts)
-9. [ ] Update navigation components (e.g., Sidebar) to include new pages
+9. [x] Update navigation components (e.g., Sidebar) to include new pages
 10. [ ] Test all new features and fix any issues

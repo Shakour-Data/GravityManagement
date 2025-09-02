@@ -1,6 +1,39 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from './api'
 
+// GitHub data types
+interface GitHubCommit {
+  id: string
+  message: string
+  author: string
+  date: string
+  sha: string
+}
+
+interface GitHubPullRequest {
+  id: number
+  title: string
+  state: 'open' | 'closed'
+  author: string
+  createdAt: string
+  url: string
+}
+
+interface GitHubIssue {
+  id: number
+  title: string
+  state: 'open' | 'closed'
+  author: string
+  createdAt: string
+  url: string
+}
+
+interface GitHubData {
+  commits: GitHubCommit[]
+  pullRequests: GitHubPullRequest[]
+  issues: GitHubIssue[]
+}
+
 interface UseApiState<T> {
   data: T | null
   loading: boolean
@@ -139,6 +172,37 @@ export function useCreateProject() {
   return { ...state, mutate }
 }
 
+export function useCreateTask() {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (data: any) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.post('/tasks', data)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
 export function useUpdateProject(id: string) {
   const [state, setState] = useState<UseApiState<any>>({
     data: null,
@@ -151,6 +215,37 @@ export function useUpdateProject(id: string) {
 
     try {
       const response = await apiClient.put(`/projects/${id}`, data)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
+export function useUpdateTask(id: string) {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (data: any) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.put(`/tasks/${id}`, data)
       setState({
         data: response.data,
         loading: false,
@@ -227,4 +322,9 @@ export function useRealtimeUpdates(endpoint: string) {
   }, [endpoint])
 
   return { data, connected }
+}
+
+// GitHub integration hook
+export function useGitHubData() {
+  return useApi<GitHubData>('/github/integration')
 }

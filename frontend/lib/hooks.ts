@@ -132,6 +132,103 @@ export function useResources() {
   return useApi('/resources')
 }
 
+export function useResource(id: string) {
+  return useApi(`/resources/${id}`, { enabled: !!id })
+}
+
+export function useCreateResource() {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (data: any) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.post('/resources', data)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
+export function useUpdateResource(id: string) {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (data: any) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.put(`/resources/${id}`, data)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
+export function useDeleteResource() {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (id: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.delete(`/resources/${id}`)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
 export function useUsers() {
   return useApi('/users')
 }

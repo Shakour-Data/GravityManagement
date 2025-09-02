@@ -1,6 +1,39 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from './api'
 
+// GitHub data types
+interface GitHubCommit {
+  id: string
+  message: string
+  author: string
+  date: string
+  sha: string
+}
+
+interface GitHubPullRequest {
+  id: number
+  title: string
+  state: 'open' | 'closed'
+  author: string
+  createdAt: string
+  url: string
+}
+
+interface GitHubIssue {
+  id: number
+  title: string
+  state: 'open' | 'closed'
+  author: string
+  createdAt: string
+  url: string
+}
+
+interface GitHubData {
+  commits: GitHubCommit[]
+  pullRequests: GitHubPullRequest[]
+  issues: GitHubIssue[]
+}
+
 interface UseApiState<T> {
   data: T | null
   loading: boolean
@@ -227,4 +260,9 @@ export function useRealtimeUpdates(endpoint: string) {
   }, [endpoint])
 
   return { data, connected }
+}
+
+// GitHub integration hook
+export function useGitHubData() {
+  return useApi<GitHubData>('/github/integration')
 }

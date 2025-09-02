@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress'
 import { Alert } from '@/components/ui/alert'
 import { Loader2, Edit, Trash2, ArrowLeft, Calendar, CheckCircle } from 'lucide-react'
 import { useTask } from '@/lib/hooks'
+import TaskDependencies from '@/components/TaskDependencies'
 
 interface Task {
   id: string
@@ -31,7 +32,7 @@ export default function TaskDetailsPage() {
   const id = params.id as string
 
   // Fetch task
-  const { data: task, loading, error } = useTask(id)
+  const { data: task, loading, error } = useTask(id) as { data: Task | null, loading: boolean, error: string | null }
 
   if (loading) {
     return (
@@ -143,6 +144,9 @@ export default function TaskDetailsPage() {
           </div>
         </Card>
       </div>
+
+      {/* Task Dependencies */}
+      <TaskDependencies taskId={id} />
     </div>
   )
 }

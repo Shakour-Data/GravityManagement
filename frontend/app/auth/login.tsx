@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { Form, FormField } from '@/components/forms'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
+import { apiClient } from '@/lib/api'
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -27,14 +28,13 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      // TODO: Implement authentication logic with backend
-      console.log('Login data:', data)
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // On success, redirect to dashboard
-      router.push('/dashboard')
+      // Implement authentication logic with backend
+      const response = await apiClient.login(data)
+      if (response.data.token) {
+        router.push('/dashboard')
+      } else {
+        setError('Login failed. Please check your credentials.')
+      }
     } catch (err) {
       setError('Login failed. Please check your credentials.')
     } finally {

@@ -6,30 +6,39 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Users, Folder, CheckCircle } from 'lucide-react'
+import { Alert } from '@/components/ui/alert'
+import { Calendar, Users, Folder, CheckCircle, Loader2 } from 'lucide-react'
+import { useDashboardStats, useProjects, useTasks } from '@/lib/hooks'
 
 export default function DashboardPage() {
   const { t } = useTranslation('common')
 
-  // Mock data - replace with real data from API
-  const stats = [
-    { title: 'Total Projects', value: '12', icon: Folder, color: 'text-blue-600' },
-    { title: 'Active Tasks', value: '45', icon: CheckCircle, color: 'text-green-600' },
-    { title: 'Team Members', value: '8', icon: Users, color: 'text-purple-600' },
-    { title: 'Upcoming Deadlines', value: '3', icon: Calendar, color: 'text-red-600' },
-  ]
+  // Fetch data from API
+  const { data: statsData, loading: statsLoading, error: statsError } = useDashboardStats()
+  const { data: projectsData, loading: projectsLoading, error: projectsError } = useProjects()
+  const { data: tasksData, loading: tasksLoading, error: tasksError } = useTasks()
 
-  const recentProjects = [
-    { name: 'Project Alpha', progress: 75, status: 'In Progress' },
-    { name: 'Project Beta', progress: 90, status: 'Review' },
-    { name: 'Project Gamma', progress: 30, status: 'Planning' },
-  ]
+  // Process stats data
+  const stats = statsData ? [
+    { title: 'Total Projects', value: statsData.totalProjects?.toString() || '0', icon: Folder, color: 'text-blue-600' },
+    { title: 'Active Tasks', value: statsData.activeTasks?.toString() || '0', icon: CheckCircle, color: 'text-green-600' },
+    { title: 'Team Members', value: statsData.teamMembers?.toString() || '0', icon: Users, color: 'text-purple-600' },
+    { title: 'Upcoming Deadlines', value: statsData.upcomingDeadlines?.toString() || '0', icon: Calendar, color: 'text-red-600' },
+  ] : []
 
-  const recentTasks = [
-    { name: 'Design new UI', priority: 'High', status: 'In Progress' },
-    { name: 'Implement API', priority: 'Medium', status: 'Done' },
-    { name: 'Write documentation', priority: 'Low', status: 'Todo' },
-  ]
+  // Process recent projects (take first 3)
+  const recentProjects = projectsData?.slice(0, 3).map(project => ({
+    name: project.name,
+    progress: project.progress || 0,
+    status: project.status || 'Unknown'
+  })) || []
+
+  // Process recent tasks (take first 3)
+  const recentTasks = tasksData?.slice(0, 3).map(task => ({
+    name: task.name,
+    priority: task.priority || 'Medium',
+    status: task.status || 'Todo'
+  })) || []
 
   return (
     <div className="p-6">
@@ -37,17 +46,29 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <Card key={index} className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                <p className="text-2xl font-bold">{stat.value}</p>
+        {statsLoading ? (
+          <div className="col-span-full flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : statsError ? (
+          <div className="col-span-full">
+            <Alert variant="destructive">
+              Failed to load dashboard stats: {statsError}
+            </Alert>
+          </div>
+        ) : (
+          stats.map((stat, index) => (
+            <Card key={index} className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                </div>
+                <stat.icon className={`h-8 w-8 ${stat.color}`} />
               </div>
-              <stat.icon className={`h-8 w-8 ${stat.color}`} />
-            </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -55,7 +76,7 @@ export default function DashboardPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">{t('projects')}</h2>
           <div className="space-y-4">
-            {recentProjects.map((project, index) => (
+            {recentProjects.map((project: any, index: number) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="font-medium">{project.name}</p>
@@ -77,7 +98,7 @@ export default function DashboardPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">{t('tasks')}</h2>
           <div className="space-y-4">
-            {recentTasks.map((task, index) => (
+            {recentTasks.map((task: any, index: number) => (
               <div key={index} className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{task.name}</p>

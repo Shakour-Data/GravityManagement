@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 from backend.app.main import app
 from backend.app.database import get_database
 from backend.app.models.user import UserCreate
+from backend.app.services.auth_service import get_password_hash
 
 
 class TestAuthRouter:
@@ -51,7 +52,7 @@ class TestAuthRouter:
             "username": "testuser",
             "email": "test@example.com",
             "full_name": "Test User",
-            "password": "testpassword123"
+            "password": "Testpassword123"
         }
 
         response = client.post("/auth/register", json=user_data)
@@ -77,7 +78,7 @@ class TestAuthRouter:
             "username": "testuser",
             "email": "new@example.com",
             "full_name": "Test User",
-            "password": "testpassword123"
+            "password": "Testpassword123"
         }
 
         response = client.post("/auth/register", json=user_data)
@@ -100,7 +101,7 @@ class TestAuthRouter:
             "username": "testuser",
             "email": "test@example.com",
             "full_name": "Test User",
-            "password": "testpassword123"
+            "password": "Testpassword123"
         }
 
         response = client.post("/auth/register", json=user_data)
@@ -116,7 +117,7 @@ class TestAuthRouter:
             "_id": "user123",
             "username": "testuser",
             "email": "test@example.com",
-            "hashed_password": "$2b$12$DWTkm6a6U8.bCrYARCfkPOx1hcMWtruEteEarTqi2BJWEZM5trTtC",  # bcrypt hash for "password"
+            "hashed_password": get_password_hash("Password123"),
             "full_name": "Test User",
             "disabled": False
         }
@@ -125,7 +126,7 @@ class TestAuthRouter:
 
         login_data = {
             "username": "testuser",
-            "password": "password"
+            "password": "Password123"
         }
 
         response = client.post("/auth/token", data=login_data)
@@ -170,7 +171,7 @@ class TestAuthRouter:
         # First get a token
         login_data = {
             "username": "testuser",
-            "password": "password"
+            "password": "Password123"
         }
 
         # Mock successful authentication for token generation
@@ -178,7 +179,7 @@ class TestAuthRouter:
             "_id": "user123",
             "username": "testuser",
             "email": "test@example.com",
-            "hashed_password": "$2b$12$DWTkm6a6U8.bCrYARCfkPOx1hcMWtruEteEarTqi2BJWEZM5trTtC",
+            "hashed_password": get_password_hash("Password123"),
             "full_name": "Test User",
             "disabled": False
         })
@@ -231,7 +232,7 @@ class TestAuthRouter:
             "username": "testuser",
             "email": "invalid-email",
             "full_name": "Test User",
-            "password": "testpassword123"
+            "password": "Testpassword123"
         }
 
         response = client.post("/auth/register", json=invalid_data)

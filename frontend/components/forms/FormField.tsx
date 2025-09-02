@@ -10,6 +10,7 @@ interface FormFieldProps {
   placeholder?: string
   required?: boolean
   className?: string
+  children?: React.ReactNode
 }
 
 export const FormField: React.FC<FormFieldProps> = ({
@@ -19,6 +20,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   placeholder,
   required = false,
   className = '',
+  children,
 }) => {
   const {
     register,
@@ -31,13 +33,20 @@ export const FormField: React.FC<FormFieldProps> = ({
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <Input
-        id={name}
-        type={type}
-        placeholder={placeholder}
-        {...register(name)}
-        className={errors[name] ? 'border-red-500' : ''}
-      />
+      {children ? (
+        React.cloneElement(children as React.ReactElement, {
+          ...register(name),
+          className: `${(children as React.ReactElement).props.className || ''} ${errors[name] ? 'border-red-500' : ''}`,
+        })
+      ) : (
+        <Input
+          id={name}
+          type={type}
+          placeholder={placeholder}
+          {...register(name)}
+          className={errors[name] ? 'border-red-500' : ''}
+        />
+      )}
       {errors[name] && (
         <p className="text-sm text-red-500">
           {errors[name]?.message as string}

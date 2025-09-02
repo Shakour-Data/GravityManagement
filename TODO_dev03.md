@@ -6,14 +6,7 @@
 
 ## 4. Testing and Quality Assurance (Remaining Tasks)
 
-### 4.1 Backend Testing
-- [x] Write unit tests for services (auth_service, cache_service, project_service, user_service completed)
-- [ ] Write integration tests for routers
-- [ ] Write tests for GitHub integration
-- [ ] Add performance tests
-- [ ] Implement security testing
-
-### 4.2 Frontend Testing
+### 4.1 Frontend Testing
 - [ ] Set up testing framework (Jest, React Testing Library)
 - [ ] Write unit tests for components
 - [ ] Write integration tests for pages

@@ -19,6 +19,8 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     await connect_to_mongo()
+    from .database import create_indexes
+    await create_indexes()
     await cache_service.initialize()
 
 @app.on_event("shutdown")

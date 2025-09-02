@@ -36,6 +36,9 @@ class Project(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     budget: Optional[float] = Field(None, ge=0)  # Must be non-negative
+    spent_amount: float = Field(default=0.0, ge=0)  # Amount spent so far
+    budget_alert_threshold: float = Field(default=0.8, ge=0, le=1)  # Alert when spent > threshold * budget
+    timeline: ProjectTimeline = ProjectTimeline()  # Project timeline with milestones
     team_members: List[str] = []  # List of user IDs
     created_at: datetime = datetime.utcnow()
     updated_at: datetime = datetime.utcnow()
@@ -65,6 +68,7 @@ class ProjectCreate(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     budget: Optional[float] = Field(None, ge=0)
+    budget_alert_threshold: float = Field(default=0.8, ge=0, le=1)
 
     @validator('end_date')
     def end_date_after_start(cls, v, values):
@@ -80,6 +84,8 @@ class ProjectUpdate(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     budget: Optional[float] = Field(None, ge=0)
+    spent_amount: Optional[float] = Field(None, ge=0)
+    budget_alert_threshold: Optional[float] = Field(None, ge=0, le=1)
     team_members: Optional[List[str]] = None
 
     @validator('end_date')

@@ -1,8 +1,9 @@
-from pydantic import BaseModel, EmailStr, validator, Field
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 from datetime import datetime
 
 class User(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
     id: Optional[str] = None
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
@@ -12,13 +13,9 @@ class User(BaseModel):
     github_id: Optional[str] = None
     github_access_token: Optional[str] = None
     created_at: datetime = datetime.utcnow()
-    updated_at: datetime.utcnow()
+    updated_at: datetime = datetime.utcnow()
 
-    class Config:
-        allow_population_by_field_name = True
-        fields = {
-            'id': '_id'
-        }
+    # Removed Config class as deprecated in Pydantic v2
 
     @validator('username')
     def username_alphanumeric(cls, v):
@@ -36,7 +33,8 @@ class UserInDB(User):
     hashed_password: str
 
 class UserCreate(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50)
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    username: str
     email: EmailStr
     password: str = Field(..., min_length=8)
     full_name: Optional[str] = Field(None, min_length=2, max_length=100)
@@ -51,13 +49,16 @@ class UserCreate(BaseModel):
         return v
 
 class UserUpdate(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     email: Optional[EmailStr] = None
     full_name: Optional[str] = Field(None, min_length=2, max_length=100)
     disabled: Optional[bool] = None
 
 class Token(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     access_token: str
     token_type: str
 
 class TokenData(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     username: Optional[str] = None

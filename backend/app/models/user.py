@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -9,7 +9,7 @@ class User(BaseModel):
     email: EmailStr
     full_name: Optional[str] = Field(None, min_length=2, max_length=100)
     disabled: Optional[bool] = False
-    role: str = Field("user", regex="^(user|admin|manager)$")  # user, admin, manager
+    role: str = Field("user", pattern="^(user|admin|manager)$")  # user, admin, manager
     github_id: Optional[str] = None
     github_access_token: Optional[str] = None
     created_at: datetime = datetime.utcnow()
@@ -17,13 +17,15 @@ class User(BaseModel):
 
     # Removed Config class as deprecated in Pydantic v2
 
-    @validator('username')
+    @field_validator('username')
+    @classmethod
     def username_alphanumeric(cls, v):
         if not v.replace('_', '').replace('-', '').isalnum():
             raise ValueError('Username must be alphanumeric with optional underscores or hyphens')
         return v
 
-    @validator('role')
+    @field_validator('role')
+    @classmethod
     def role_valid(cls, v):
         if v not in ['user', 'admin', 'manager']:
             raise ValueError('Role must be one of: user, admin, manager')
@@ -39,7 +41,8 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=8)
     full_name: Optional[str] = Field(None, min_length=2, max_length=100)
 
-    @validator('password')
+    @field_validator('password')
+    @classmethod
     def password_strength(cls, v):
         has_upper = any(c.isupper() for c in v)
         has_lower = any(c.islower() for c in v)

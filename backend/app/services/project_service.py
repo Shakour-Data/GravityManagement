@@ -7,18 +7,20 @@ class ProjectService:
     def __init__(self):
         self.db = get_database()
 
-    async def create_project(self, project_create: ProjectCreate) -> Project:
+    async def create_project(self, project_create: ProjectCreate, owner) -> Project:
         project_dict = project_create.dict()
         project_dict["created_at"] = datetime.utcnow()
         project_dict["updated_at"] = datetime.utcnow()
         project_dict["status"] = "planning"
         project_dict["spent_amount"] = 0.0
         project_dict["timeline"] = ProjectTimeline().dict()
+        project_dict["owner_id"] = owner.username
+        project_dict["team_members"] = [owner.username]
         result = await self.db.projects.insert_one(project_dict)
         created_project = await self.db.projects.find_one({"_id": result.inserted_id})
         return Project(**created_project)
 
-    async def update_project(self, project_id: str, project_update: ProjectUpdate) -> Optional[Project]:
+    async def update_project(self, project_id: str, project_update: ProjectUpdate, user) -> Optional[Project]:
         update_data = project_update.dict(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
         result = await self.db.projects.update_one({"_id": project_id}, {"$set": update_data})
@@ -27,7 +29,7 @@ class ProjectService:
         updated_project = await self.db.projects.find_one({"_id": project_id})
         return Project(**updated_project)
 
-    async def get_project(self, project_id: str) -> Optional[Project]:
+    async def get_project(self, project_id: str, user=None) -> Optional[Project]:
         project = await self.db.projects.find_one({"_id": project_id})
         if project:
             return Project(**project)
@@ -111,6 +113,13 @@ class ProjectService:
             "alert_triggered": alert_status["alert"],
             "status": "over_budget" if project.spent_amount > project.budget else "on_track"
         }
+
+    async def delete_project(self, project_id: str, user) -> bool:
+        project = await self.get_project(project_id, user)
+        if not project:
+            return False
+        result = await self.db.projects.delete_one({"_id": project_id})
+        return result.deleted_count > 0
 
     # Additional methods for timeline management, critical path calculation, budget alerts etc. can be added here
 

@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from ..database import get_database
@@ -47,7 +49,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     user = await db.users.find_one({"username": token_data.username})
     if user is None:
         raise credentials_exception
-    return User(**user)
+    user_data = {k: v for k, v in user.items() if k != 'hashed_password'}
+    return User(**user_data)
 
 async def get_current_active_user(current_user: User = Depends(get_current_user)):
     if current_user.disabled:
@@ -85,7 +88,8 @@ async def register(request: Request, user: UserCreate):
 
     result = await db.users.insert_one(user_dict)
     created_user = await db.users.find_one({"_id": result.inserted_id})
-    return User(**created_user)
+    user_data = {k: v for k, v in created_user.items() if k != 'hashed_password'}
+    return User(**user_data)
 
 @router.post("/token", response_model=Token)
 @limiter.limit("10/minute")

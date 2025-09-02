@@ -9,6 +9,7 @@
 ### 4.1 Backend Testing
 - [x] Write unit tests for services (auth_service, cache_service, project_service, user_service completed)
 - [x] Write integration tests for auth router (completed - 11 tests passing)
+- [x] Fix authentication issues and service method signatures
 - [ ] Write integration tests for other routers (projects, tasks, resources, github_integration, rules)
 - [ ] Write tests for GitHub integration
 - [ ] Add performance tests

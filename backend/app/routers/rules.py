@@ -154,3 +154,33 @@ async def test_rule(rule_id: str, test_data: dict, current_user: User = Depends(
         "test_data": test_data,
         "rule_conditions": rule["conditions"]
     }
+
+@router.post("/{rule_id}/trigger")
+async def trigger_rule(rule_id: str, event_data: dict, current_user: User = Depends(get_current_user)):
+    """
+    Manually trigger a rule by ID with event data
+    """
+    db = get_database()
+    rule = await db.rules.find_one({"_id": rule_id, "active": True})
+    if not rule:
+        raise HTTPException(status_code=404, detail="Rule not found or inactive")
+
+    # Check if user has access to the rule
+    if rule.get("project_id"):
+        project = await db.projects.find_one({
+            "_id": rule["project_id"],
+            "$or": [{"owner_id": current_user.username}, {"team_members": current_user.username}]
+        })
+        if not project:
+            raise HTTPException(status_code=404, detail="Not authorized")
+    elif rule.get("created_by") != current_user.username:
+        raise HTTPException(status_code=404, detail="Not authorized")
+
+    from ..services.rule_engine import rule_engine
+
+    triggered_actions = await rule_engine.trigger_rule_manually(rule_id, event_data)
+
+    return {
+        "rule_id": rule_id,
+        "triggered_actions": triggered_actions
+    }

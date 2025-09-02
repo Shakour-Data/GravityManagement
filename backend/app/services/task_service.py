@@ -1,274 +1,169 @@
-from typing import List, Optional, Dict, Any
+from typing import Optional, List, Dict
 from datetime import datetime
 from ..database import get_database
-from ..models.task import Task, TaskCreate, TaskUpdate, TaskStatus
-from ..models.user import User
-from .exceptions import (
-    ValidationError, AuthorizationError, NotFoundError, ConflictError,
-    BusinessLogicError, raise_validation_error, raise_authorization_error,
-    raise_not_found_error, raise_conflict_error, raise_business_logic_error
-)
+from ..models.task import Task, TaskCreate, TaskUpdate, TaskDependency, TaskProgress, TaskStatus
 
 class TaskService:
     def __init__(self):
         self.db = get_database()
 
-    async def create_task(self, task_data: TaskCreate, user: User) -> Task:
-        """
-        Create a new task with validation and business logic
-        """
-        # Validate task data
-        await self._validate_task_data(task_data, user)
-
-        # Create task document
-        task_dict = task_data.dict()
-        task_dict.update({
-            "status": TaskStatus.TODO,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
-        })
-
+    async def create_task(self, task_create: TaskCreate) -> Task:
+        task_dict = task_create.dict()
+        task_dict["created_at"] = datetime.utcnow()
+        task_dict["updated_at"] = datetime.utcnow()
+        task_dict["status"] = TaskStatus.TODO
+        task_dict["progress"] = TaskProgress(
+            estimated_hours=task_create.estimated_hours
+        ).dict()
         result = await self.db.tasks.insert_one(task_dict)
         created_task = await self.db.tasks.find_one({"_id": result.inserted_id})
-
         return Task(**created_task)
 
-    async def get_task(self, task_id: str, user: User) -> Task:
-        """
-        Get a task with access control
-        """
+    async def update_task(self, task_id: str, task_update: TaskUpdate) -> Optional[Task]:
+        update_data = task_update.dict(exclude_unset=True)
+        update_data["updated_at"] = datetime.utcnow()
+
+        # Handle progress updates
+        if task_update.progress_percentage is not None:
+            progress_update = {
+                "percentage": task_update.progress_percentage,
+                "last_updated": datetime.utcnow()
+            }
+            if task_update.actual_hours is not None:
+                progress_update["actual_hours"] = task_update.actual_hours
+            update_data["progress"] = progress_update
+
+        result = await self.db.tasks.update_one({"_id": task_id}, {"$set": update_data})
+        if result.modified_count == 0:
+            return None
+        updated_task = await self.db.tasks.find_one({"_id": task_id})
+        return Task(**updated_task)
+
+    async def get_task(self, task_id: str) -> Optional[Task]:
         task = await self.db.tasks.find_one({"_id": task_id})
-        if not task:
-            raise_not_found_error("Task", task_id)
+        if task:
+            return Task(**task)
+        return None
 
-        # Check project access
-        await self._check_project_access(task["project_id"], user)
-
-        return Task(**task)
-
-    async def get_project_tasks(self, project_id: str, user: User, status_filter: Optional[TaskStatus] = None) -> List[Task]:
+    async def validate_dependencies(self, task_id: str, dependencies: List[TaskDependency]) -> bool:
         """
-        Get all tasks for a project with optional status filter
+        Validate that all dependencies exist and don't create circular dependencies
         """
-        # Check project access
-        await self._check_project_access(project_id, user)
+        for dep in dependencies:
+            # Check if dependency task exists
+            dep_task = await self.db.tasks.find_one({"_id": dep.task_id})
+            if not dep_task:
+                return False
 
-        query = {"project_id": project_id}
-        if status_filter:
-            query["status"] = status_filter
+            # Check for circular dependency
+            if await self._has_circular_dependency(task_id, dep.task_id):
+                return False
 
-        tasks = await self.db.tasks.find(query).sort("created_at", -1).to_list(length=None)
-        return [Task(**task) for task in tasks]
+        return True
 
-    async def get_user_assigned_tasks(self, user: User, status_filter: Optional[TaskStatus] = None) -> List[Task]:
+    async def _has_circular_dependency(self, task_id: str, dep_task_id: str) -> bool:
         """
-        Get all tasks assigned to a user
+        Check if adding this dependency would create a circular reference
         """
-        query = {"assignee_id": user.username}
-        if status_filter:
-            query["status"] = status_filter
+        # Get all tasks that depend on the current task
+        dependent_tasks = await self.db.tasks.find({"dependencies.task_id": task_id}).to_list(length=None)
 
-        tasks = await self.db.tasks.find(query).sort("due_date", 1).to_list(length=None)
-        return [Task(**task) for task in tasks]
+        for task in dependent_tasks:
+            if task["_id"] == dep_task_id:
+                return True
+            # Recursively check
+            if await self._has_circular_dependency(task["_id"], dep_task_id):
+                return True
 
-    async def update_task(self, task_id: str, update_data: TaskUpdate, user: User) -> Task:
+        return False
+
+    async def can_start_task(self, task_id: str) -> bool:
         """
-        Update a task with validation and business logic
+        Check if a task can be started based on its dependencies
         """
-        # Get existing task
-        task = await self.get_task(task_id, user)
+        task = await self.get_task(task_id)
+        if not task or not task.dependencies:
+            return True
 
-        # Validate update data
-        await self._validate_task_update(update_data, task, user)
+        for dep in task.dependencies:
+            dep_task = await self.get_task(dep.task_id)
+            if not dep_task or dep_task.status != TaskStatus.DONE:
+                return False
 
-        # Prepare update document
-        update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
-        update_dict["updated_at"] = datetime.utcnow()
+        return True
 
-        await self.db.tasks.update_one({"_id": task_id}, {"$set": update_dict})
-
-        # Get updated task
-        updated_task = await self.db.tasks.find_one({"_id": task_id})
-        return Task(**updated_task)
-
-    async def update_task_status(self, task_id: str, new_status: TaskStatus, user: User) -> Task:
+    async def assign_task_smart(self, task_id: str, project_id: str) -> Optional[str]:
         """
-        Update task status with business logic validation
+        Smart task assignment based on workload balancing
         """
-        task = await self.get_task(task_id, user)
+        # Get all team members for the project
+        project = await self.db.projects.find_one({"_id": project_id})
+        if not project:
+            return None
 
-        # Validate status transition
-        await self._validate_status_transition(task.status, new_status, user, task)
+        team_members = project.get("team_members", [])
 
-        await self.db.tasks.update_one(
-            {"_id": task_id},
-            {
-                "$set": {
-                    "status": new_status,
-                    "updated_at": datetime.utcnow()
-                }
-            }
+        # Calculate current workload for each team member
+        workloads = {}
+        for member_id in team_members:
+            # Count active tasks assigned to this member
+            active_tasks = await self.db.tasks.count_documents({
+                "assignee_id": member_id,
+                "status": {"$in": ["todo", "in_progress"]},
+                "project_id": project_id
+            })
+            workloads[member_id] = active_tasks
+
+        # Find member with least workload
+        if workloads:
+            assignee_id = min(workloads, key=workloads.get)
+            await self.db.tasks.update_one(
+                {"_id": task_id},
+                {"$set": {"assignee_id": assignee_id, "updated_at": datetime.utcnow()}}
+            )
+            return assignee_id
+
+        return None
+
+    async def get_project_progress(self, project_id: str) -> Dict:
+        """
+        Calculate overall project progress
+        """
+        tasks = await self.db.tasks.find({"project_id": project_id}).to_list(length=None)
+
+        if not tasks:
+            return {"total_tasks": 0, "completed_tasks": 0, "progress_percentage": 0.0}
+
+        total_tasks = len(tasks)
+        completed_tasks = sum(1 for task in tasks if task["status"] == TaskStatus.DONE)
+
+        # Calculate weighted progress based on task priorities
+        total_weight = sum(task.get("priority", 1) for task in tasks)
+        completed_weight = sum(
+            task.get("priority", 1) for task in tasks
+            if task["status"] == TaskStatus.DONE
         )
 
-        updated_task = await self.db.tasks.find_one({"_id": task_id})
-        return Task(**updated_task)
-
-    async def assign_task(self, task_id: str, assignee_username: str, user: User) -> Task:
-        """
-        Assign a task to a user
-        """
-        task = await self.get_task(task_id, user)
-
-        # Check if assignee exists and has project access
-        await self._check_project_access(task.project_id, User(username=assignee_username))
-
-        await self.db.tasks.update_one(
-            {"_id": task_id},
-            {
-                "$set": {
-                    "assignee_id": assignee_username,
-                    "updated_at": datetime.utcnow()
-                }
-            }
-        )
-
-        updated_task = await self.db.tasks.find_one({"_id": task_id})
-        return Task(**updated_task)
-
-    async def delete_task(self, task_id: str, user: User) -> bool:
-        """
-        Delete a task
-        """
-        task = await self.get_task(task_id, user)
-
-        # Only assignee or project owner can delete
-        project = await self.db.projects.find_one({"_id": task.project_id})
-        if user.username != task.assignee_id and user.username != project["owner_id"]:
-            raise_authorization_error("Not authorized to delete this task")
-
-        result = await self.db.tasks.delete_one({"_id": task_id})
-        return result.deleted_count > 0
-
-    async def get_overdue_tasks(self, user: User) -> List[Task]:
-        """
-        Get overdue tasks for user's projects
-        """
-        # Get user's projects
-        user_projects = await self.db.projects.find({
-            "$or": [
-                {"owner_id": user.username},
-                {"team_members": user.username}
-            ]
-        }).to_list(length=None)
-
-        project_ids = [p["_id"] for p in user_projects]
-
-        # Find overdue tasks
-        overdue_tasks = await self.db.tasks.find({
-            "project_id": {"$in": project_ids},
-            "due_date": {"$lt": datetime.utcnow()},
-            "status": {"$ne": TaskStatus.DONE}
-        }).sort("due_date", 1).to_list(length=None)
-
-        return [Task(**task) for task in overdue_tasks]
-
-    async def get_task_stats(self, project_id: str, user: User) -> Dict[str, Any]:
-        """
-        Get task statistics for a project
-        """
-        await self._check_project_access(project_id, user)
-
-        # Count tasks by status
-        task_stats = await self.db.tasks.aggregate([
-            {"$match": {"project_id": project_id}},
-            {"$group": {"_id": "$status", "count": {"$sum": 1}}}
-        ]).to_list(length=None)
-
-        # Count tasks by assignee
-        assignee_stats = await self.db.tasks.aggregate([
-            {"$match": {"project_id": project_id, "assignee_id": {"$ne": None}}},
-            {"$group": {"_id": "$assignee_id", "count": {"$sum": 1}}}
-        ]).to_list(length=None)
-
-        # Count overdue tasks
-        overdue_count = await self.db.tasks.count_documents({
-            "project_id": project_id,
-            "due_date": {"$lt": datetime.utcnow()},
-            "status": {"$ne": TaskStatus.DONE}
-        })
+        progress_percentage = (completed_weight / total_weight * 100) if total_weight > 0 else 0.0
 
         return {
-            "project_id": project_id,
-            "status_breakdown": {stat["_id"]: stat["count"] for stat in task_stats},
-            "assignee_breakdown": {stat["_id"]: stat["count"] for stat in assignee_stats},
-            "overdue_count": overdue_count,
-            "total_tasks": sum(stat["count"] for stat in task_stats)
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "progress_percentage": round(progress_percentage, 2)
         }
 
-    async def _validate_task_data(self, task_data: TaskCreate, user: User):
+    async def get_overdue_tasks(self, project_id: Optional[str] = None) -> List[Task]:
         """
-        Validate task creation data
+        Get all overdue tasks
         """
-        if not task_data.title or len(task_data.title.strip()) < 3:
-            raise_validation_error("Task title must be at least 3 characters", "title")
+        query = {
+            "due_date": {"$lt": datetime.utcnow()},
+            "status": {"$ne": TaskStatus.DONE}
+        }
+        if project_id:
+            query["project_id"] = project_id
 
-        # Check project access
-        await self._check_project_access(task_data.project_id, user)
+        overdue_tasks = await self.db.tasks.find(query).to_list(length=None)
+        return [Task(**task) for task in overdue_tasks]
 
-        # Validate due date
-        if task_data.due_date and task_data.due_date <= datetime.utcnow():
-            raise_business_logic_error("Due date must be in the future", "due_date")
-
-        # Validate assignee if provided
-        if task_data.assignee_id:
-            await self._check_project_access(task_data.project_id, User(username=task_data.assignee_id))
-
-    async def _validate_task_update(self, update_data: TaskUpdate, existing_task: Task, user: User):
-        """
-        Validate task update data
-        """
-        if update_data.title and len(update_data.title.strip()) < 3:
-            raise_validation_error("Task title must be at least 3 characters", "title")
-
-        if update_data.due_date and update_data.due_date <= datetime.utcnow():
-            raise_business_logic_error("Due date must be in the future", "due_date")
-
-        if update_data.assignee_id:
-            await self._check_project_access(existing_task.project_id, User(username=update_data.assignee_id))
-
-    async def _validate_status_transition(self, current_status: TaskStatus, new_status: TaskStatus, user: User, task: Task):
-        """
-        Validate task status transitions
-        """
-        # Business rules for status transitions
-        invalid_transitions = [
-            (TaskStatus.DONE, TaskStatus.TODO),  # Can't go back to TODO from DONE
-            (TaskStatus.DONE, TaskStatus.IN_PROGRESS),  # Can't go back to IN_PROGRESS from DONE
-        ]
-
-        if (current_status, new_status) in invalid_transitions:
-            raise_business_logic_error(f"Invalid status transition from {current_status} to {new_status}", "status_transition")
-
-        # Only assignee or project owner can change status to DONE
-        if new_status == TaskStatus.DONE:
-            project = await self.db.projects.find_one({"_id": task.project_id})
-            if user.username != task.assignee_id and user.username != project["owner_id"]:
-                raise_authorization_error("Only assignee or project owner can mark task as done")
-
-    async def _check_project_access(self, project_id: str, user: User):
-        """
-        Check if user has access to a project
-        """
-        project = await self.db.projects.find_one({
-            "_id": project_id,
-            "$or": [
-                {"owner_id": user.username},
-                {"team_members": user.username}
-            ]
-        })
-
-        if not project:
-            raise HTTPException(status_code=404, detail="Project not found or access denied")
-
-# Global task service instance
 task_service = TaskService()

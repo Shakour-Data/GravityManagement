@@ -10,8 +10,8 @@
 - [x] Set up ESLint and Prettier
 
 ### 3.2 UI Components
-- [ ] Create reusable UI components (Button, Input, etc.)
-- [ ] Implement layout components (Header, Sidebar, Footer)
+- [x] Create reusable UI components (Button, Input, etc.)
+- [x] Implement layout components (Header, Sidebar, Footer)
 - [ ] Create form components
 - [ ] Implement data display components (Tables, Charts)
 

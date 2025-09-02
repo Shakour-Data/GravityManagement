@@ -12,24 +12,24 @@
 - [x] Create Button component
 - [x] Create Input component
 - [x] Create Card component
-- [ ] Create Badge component
+- [x] Create Badge component
 - [x] Create Avatar component
-- [ ] Create Progress component
-- [ ] Create Alert component
-- [ ] Create Modal component
-- [ ] Create Tooltip component
-- [ ] Create Table component
-- [ ] Create Select component
-- [ ] Create Checkbox component
-- [ ] Create Radio component
-- [ ] Create Switch component
+- [x] Create Progress component
+- [x] Create Alert component
+- [x] Create Modal component
+- [x] Create Tooltip component
+- [x] Create Table component
+- [x] Create Select component
+- [x] Create Checkbox component
+- [x] Create Radio component
+- [x] Create Switch component
 
 ## 3. Layout Components
 - [x] Create Header component with language switcher
-- [ ] Create Sidebar component (responsive)
-- [ ] Create Footer component
-- [ ] Create Breadcrumb component
-- [ ] Create Tabs component
+- [x] Create Sidebar component (responsive)
+- [x] Create Footer component
+- [x] Create Breadcrumb component
+- [x] Create Tabs component
 
 ## 4. Form Components
 - [ ] Create Form wrapper component

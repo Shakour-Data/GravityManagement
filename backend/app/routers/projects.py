@@ -54,6 +54,48 @@ async def delete_project(project_id: str, current_user: User = Depends(get_curre
     project = await db.projects.find_one({"_id": project_id, "owner_id": current_user.username})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found or not authorized")
-    
+
     await db.projects.delete_one({"_id": project_id})
     return {"message": "Project deleted successfully"}
+
+@router.post("/{project_id}/budget/spend")
+async def update_spent_amount(project_id: str, amount: float, current_user: User = Depends(get_current_user)):
+    from ..services.project_service import project_service
+
+    # Check if user has access to the project
+    db = get_database()
+    project = await db.projects.find_one({"_id": project_id, "$or": [{"owner_id": current_user.username}, {"team_members": current_user.username}]})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or not authorized")
+
+    try:
+        updated_project = await project_service.update_spent_amount(project_id, amount)
+        return {"message": "Spent amount updated", "project": updated_project}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/{project_id}/budget/report")
+async def get_budget_report(project_id: str, current_user: User = Depends(get_current_user)):
+    from ..services.project_service import project_service
+
+    # Check if user has access to the project
+    db = get_database()
+    project = await db.projects.find_one({"_id": project_id, "$or": [{"owner_id": current_user.username}, {"team_members": current_user.username}]})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or not authorized")
+
+    report = await project_service.get_budget_report(project_id)
+    return report
+
+@router.get("/{project_id}/budget/alert")
+async def check_budget_alert(project_id: str, current_user: User = Depends(get_current_user)):
+    from ..services.project_service import project_service
+
+    # Check if user has access to the project
+    db = get_database()
+    project = await db.projects.find_one({"_id": project_id, "$or": [{"owner_id": current_user.username}, {"team_members": current_user.username}]})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or not authorized")
+
+    alert = await project_service.check_budget_alert(project_id)
+    return alert

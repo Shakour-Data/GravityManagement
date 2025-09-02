@@ -130,9 +130,11 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-          <Button className="mt-4 w-full" variant="outline">
-            View All Tasks
-          </Button>
+          <Link href="/tasks">
+            <Button className="mt-4 w-full" variant="outline">
+              View All Tasks
+            </Button>
+          </Link>
         </Card>
       </div>
 

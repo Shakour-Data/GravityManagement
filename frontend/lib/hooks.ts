@@ -172,6 +172,37 @@ export function useCreateProject() {
   return { ...state, mutate }
 }
 
+export function useCreateTask() {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (data: any) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.post('/tasks', data)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
 export function useUpdateProject(id: string) {
   const [state, setState] = useState<UseApiState<any>>({
     data: null,
@@ -184,6 +215,37 @@ export function useUpdateProject(id: string) {
 
     try {
       const response = await apiClient.put(`/projects/${id}`, data)
+      setState({
+        data: response.data,
+        loading: false,
+        error: null,
+      })
+      return response
+    } catch (error) {
+      setState({
+        data: null,
+        loading: false,
+        error: error instanceof Error ? error.message : 'An error occurred',
+      })
+      throw error
+    }
+  }
+
+  return { ...state, mutate }
+}
+
+export function useUpdateTask(id: string) {
+  const [state, setState] = useState<UseApiState<any>>({
+    data: null,
+    loading: false,
+    error: null,
+  })
+
+  const mutate = async (data: any) => {
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await apiClient.put(`/tasks/${id}`, data)
       setState({
         data: response.data,
         loading: false,

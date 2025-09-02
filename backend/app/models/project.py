@@ -10,6 +10,22 @@ class ProjectStatus(str, Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
 
+class TimelineMilestone(BaseModel):
+    id: Optional[str] = None
+    name: str
+    description: Optional[str] = None
+    due_date: datetime
+    completed: bool = False
+    completed_at: Optional[datetime] = None
+    dependencies: List[str] = []  # IDs of milestones this depends on
+
+class ProjectTimeline(BaseModel):
+    milestones: List[TimelineMilestone] = []
+    critical_path: List[str] = []  # IDs of critical path milestones
+    estimated_duration_days: Optional[int] = None
+    actual_duration_days: Optional[int] = None
+    progress_percentage: float = 0.0
+
 class Project(BaseModel):
     id: Optional[str] = None
     name: str = Field(..., min_length=1, max_length=100)

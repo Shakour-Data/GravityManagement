@@ -15,3 +15,5 @@ export const Label: React.FC<LabelProps> = ({ children, className = '', ...props
     </label>
   )
 }
+
+Label.displayName = 'Label'

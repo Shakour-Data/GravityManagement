@@ -10,6 +10,7 @@ class User(BaseModel):
     disabled: Optional[bool] = False
     role: str = Field("user", regex="^(user|admin|manager)$")  # user, admin, manager
     github_id: Optional[str] = None
+    github_access_token: Optional[str] = None
     created_at: datetime = datetime.utcnow()
     updated_at: datetime.utcnow()
 

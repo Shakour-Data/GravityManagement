@@ -13,8 +13,8 @@
 
 ### Resource Allocation
 - **Developer 01 (TODO_dev01.md)**: Backend Development (Branch: feature/backend-enhancements)
-- **Developer 02 (TODO_dev02.md)**: Frontend Development (Branch: feature/frontend-development)
-- **Developer 03 (TODO_dev03.md)**: Testing, Deployment & Operations (Branch: feature/testing-deployment)
+- **Developer 02 (frontend/TODO_dev02.md)**: Frontend Code Development (Branch: feature/frontend-development)
+- **Developer 03 (TODO_dev03.md)**: Frontend Testing (Branch: feature/testing-deployment)
 
 **Note**: Each developer works on separate branches with no file overlap or dependencies between their work areas.
 

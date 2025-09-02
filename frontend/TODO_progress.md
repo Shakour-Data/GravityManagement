@@ -29,10 +29,10 @@
 
 ## Remaining Tasks
 - [ ] Add task board (Kanban view)
-- [ ] Implement task dependencies visualization
-- [ ] Create resource allocation page
-- [ ] Implement resource assignment interface
-- [ ] Add resource utilization charts
+- [x] Implement task dependencies visualization
+- [x] Create resource allocation page
+- [x] Implement resource assignment interface
+- [x] Add resource utilization charts
 - [ ] Create rules management page
 - [ ] Implement rule creation/editing interface
 - [ ] Add rule testing interface
@@ -42,9 +42,9 @@
 1. [x] Create TaskBoard component (frontend/components/TaskBoard.tsx)
 2. [x] Create task board page (frontend/app/tasks/board.tsx)
 3. [x] Update tasks/page.tsx to add board toggle
-4. [ ] Create TaskDependencies component (frontend/components/TaskDependencies.tsx)
-5. [ ] Integrate dependencies into task detail page (frontend/app/tasks/[id]/page.tsx)
-6. [ ] Create resources page (frontend/app/resources/page.tsx) with allocation, assignment, charts
+4. [x] Create TaskDependencies component (frontend/components/TaskDependencies.tsx)
+5. [x] Integrate dependencies into task detail page (frontend/app/tasks/[id]/page.tsx)
+6. [x] Create resources page (frontend/app/resources/page.tsx) with allocation, assignment, charts
 7. [ ] Create rules page (frontend/app/rules/page.tsx) with management, creation, editing, testing
 8. [ ] Enhance real-time updates in hooks (frontend/lib/hooks.ts) and api (frontend/lib/api.ts)
 9. [ ] Update navigation components (e.g., Sidebar) to include new pages

@@ -2,7 +2,7 @@
 ## Branch: feature/frontend-development
 ## Focus: Complete all remaining frontend development tasks
 
-## Overall Progress: ~65% (Frontend Development)
+## Overall Progress: ~70% (Frontend Development)
 
 ## 3. Frontend Development (Remaining Tasks)
 
@@ -40,7 +40,7 @@
 - [x] Add task details view
 - [x] Implement task progress tracking
 - [ ] Add task board (Kanban view)
-- [ ] Implement task dependencies visualization
+- [x] Implement task dependencies visualization
 
 #### 3.3.5 Resource Management
 - [ ] Create resource allocation page

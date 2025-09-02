@@ -12,12 +12,14 @@ import { Table } from '@/components/ui/table'
 import { Alert } from '@/components/ui/alert'
 import { Loader2, Plus, Search, Edit, Eye, Filter } from 'lucide-react'
 import { useTasks } from '@/lib/hooks'
+import TaskBoard from '@/components/TaskBoard'
 
 export default function TasksPage() {
   const { t } = useTranslation('common')
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
+  const [viewMode, setViewMode] = useState<'list' | 'board'>('list')
 
   // Fetch tasks
   const { data: tasksData, loading, error } = useTasks()
@@ -37,12 +39,26 @@ export default function TasksPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">{t('tasks')}</h1>
-        <Link href="/tasks/create">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('createTask', 'Create Task')}
+        <div className="flex items-center space-x-4">
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            onClick={() => setViewMode('list')}
+          >
+            {t('listView', 'List View')}
           </Button>
-        </Link>
+          <Button
+            variant={viewMode === 'board' ? 'default' : 'outline'}
+            onClick={() => setViewMode('board')}
+          >
+            {t('boardView', 'Board View')}
+          </Button>
+          <Link href="/tasks/create">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('createTask', 'Create Task')}
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
@@ -85,7 +101,7 @@ export default function TasksPage() {
         </div>
       </Card>
 
-      {/* Tasks List */}
+      {/* Tasks List */}      
       {loading ? (
         <div className="flex justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -94,7 +110,7 @@ export default function TasksPage() {
         <Alert variant="destructive">
           {t('failedToLoadTasks', 'Failed to load tasks')}: {error}
         </Alert>
-      ) : (
+      ) : viewMode === 'list' ? (
         <Card>
           <Table>
             <thead>
@@ -162,6 +178,8 @@ export default function TasksPage() {
             </div>
           )}
         </Card>
+      ) : (
+        <TaskBoard />
       )}
     </div>
   )

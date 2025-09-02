@@ -7,7 +7,7 @@ class TaskService:
     def __init__(self):
         self.db = get_database()
 
-    async def create_task(self, task_create: TaskCreate) -> Task:
+    async def create_task(self, task_create: TaskCreate, user) -> Task:
         task_dict = task_create.dict()
         task_dict["created_at"] = datetime.utcnow()
         task_dict["updated_at"] = datetime.utcnow()
@@ -19,7 +19,7 @@ class TaskService:
         created_task = await self.db.tasks.find_one({"_id": result.inserted_id})
         return Task(**created_task)
 
-    async def update_task(self, task_id: str, task_update: TaskUpdate) -> Optional[Task]:
+    async def update_task(self, task_id: str, task_update: TaskUpdate, user) -> Optional[Task]:
         update_data = task_update.dict(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
 

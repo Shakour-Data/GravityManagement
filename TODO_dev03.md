@@ -2,16 +2,20 @@
 ## Branch: feature/frontend-testing
 ## Focus: Complete all frontend testing tasks
 
-## Overall Progress: ~20% (Frontend Testing)
+## Overall Progress: ~25% (Testing + Deployment + Maintenance + Future)
 
-## 4. Testing and Quality Assurance (Frontend Only)
+## 4. Testing and Quality Assurance (Remaining Tasks)
+
+### 4.1 Backend Testing
+- [x] Write unit tests for services (auth_service, cache_service, project_service, user_service completed)
+- [x] Write integration tests for auth router (completed - 11 tests passing)
+- [x] Fix authentication issues and service method signatures
+- [ ] Write integration tests for other routers (projects, tasks, resources, github_integration, rules)
+- [ ] Write tests for GitHub integration
+- [ ] Add performance tests
+- [ ] Implement security testing
 
 ### 4.2 Frontend Testing
-- [ ] Set up testing framework (Jest, React Testing Library)
-- [ ] Write unit tests for components
-- [ ] Write integration tests for pages
-- [ ] Add end-to-end tests (Cypress)
-- [ ] Implement accessibility testing
 
 ### 4.3 Documentation (Frontend Focus)
 - [ ] Add frontend code documentation

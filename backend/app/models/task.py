@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -20,6 +20,7 @@ class TaskProgress(BaseModel):
     last_updated: datetime = datetime.utcnow()
 
 class Task(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
     id: Optional[str] = None
     title: str
     description: Optional[str] = None
@@ -32,15 +33,12 @@ class Task(BaseModel):
     priority: int = Field(default=1, ge=1, le=5)  # 1=low, 5=critical
     tags: List[str] = []
     created_at: datetime = datetime.utcnow()
-    updated_at: datetime.utcnow()
+    updated_at: datetime = datetime.utcnow()
 
-    class Config:
-        allow_population_by_field_name = True
-        fields = {
-            'id': '_id'
-        }
+    # Removed Config class as deprecated in Pydantic v2
 
 class TaskCreate(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     title: str
     description: Optional[str] = None
     project_id: str
@@ -52,6 +50,7 @@ class TaskCreate(BaseModel):
     tags: Optional[List[str]] = None
 
 class TaskUpdate(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     title: Optional[str] = None
     description: Optional[str] = None
     assignee_id: Optional[str] = None

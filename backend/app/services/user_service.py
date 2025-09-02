@@ -1,6 +1,7 @@
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from passlib.context import CryptContext
+from fastapi import HTTPException
 from ..database import get_database
 from ..models.user import User, UserCreate, UserUpdate, UserInDB
 from ..services.auth_service import get_password_hash
@@ -239,9 +240,6 @@ class UserService:
         """
         Validate user update data
         """
-        if update_data.username and len(update_data.username.strip()) < 3:
-            raise_validation_error("Username must be at least 3 characters", "username")
-
         if update_data.email:
             if "@" not in update_data.email:
                 raise_validation_error("Invalid email format", "email")
@@ -258,7 +256,7 @@ class UserService:
             raise_validation_error("Full name must be at least 2 characters", "full_name")
 
         # Only admins can change roles
-        if update_data.role and current_user.role != "admin":
+        if hasattr(update_data, 'role') and update_data.role and current_user.role != "admin":
             raise_authorization_error("Admin access required to change roles")
 
     async def _validate_password(self, password: str):

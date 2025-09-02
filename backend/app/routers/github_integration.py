@@ -21,6 +21,12 @@ async def github_webhook(request: Request):
 
     return result
 
+@router.post("/sync")
+async def sync_repository(repo_full_name: str, project_id: str):
+    from ..services.github_service import sync_repository_data
+    result = await sync_repository_data(repo_full_name, project_id)
+    return result
+
 @router.get("/repos", response_model=List[Dict[str, Any]])
 async def get_user_repos(current_user: User = Depends(get_current_user)):
     if not current_user.github_id:

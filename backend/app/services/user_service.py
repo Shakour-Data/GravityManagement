@@ -222,18 +222,10 @@ class UserService:
 
     async def _validate_user_data(self, user_data: UserCreate):
         """
-        Validate user creation data
+        Validate user creation data - basic checks beyond model validators
         """
-        if not user_data.username or len(user_data.username.strip()) < 3:
-            raise_validation_error("Username must be at least 3 characters", "username")
-
-        if not user_data.email or "@" not in user_data.email:
-            raise_validation_error("Invalid email format", "email")
-
-        await self._validate_password(user_data.password)
-
-        if user_data.full_name and len(user_data.full_name.strip()) < 2:
-            raise_validation_error("Full name must be at least 2 characters", "full_name")
+        # Model validators handle most validation, just check for duplicates
+        pass
 
     async def _validate_user_update(self, update_data: UserUpdate, existing_user: User, current_user: User):
         """

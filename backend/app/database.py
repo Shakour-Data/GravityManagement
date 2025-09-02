@@ -28,3 +28,32 @@ async def close_mongo_connection():
 
 def get_database():
     return database
+
+async def create_indexes():
+    """
+    Create necessary indexes for collections to improve query performance.
+    """
+    db = get_database()
+    if not db:
+        raise Exception("Database connection is not established")
+
+    # Users collection indexes
+    await db.users.create_index("username", unique=True)
+    await db.users.create_index("email", unique=True)
+
+    # Projects collection indexes
+    await db.projects.create_index("owner_id")
+    await db.projects.create_index("status")
+
+    # Tasks collection indexes
+    await db.tasks.create_index("assignee_id")
+    await db.tasks.create_index("status")
+    await db.tasks.create_index("due_date")
+
+    # Resources collection indexes
+    await db.resources.create_index("project_id")
+
+    # Rules collection indexes
+    await db.rules.create_index("project_id")
+
+    print("Indexes created successfully")

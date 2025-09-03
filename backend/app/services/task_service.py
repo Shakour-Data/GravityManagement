@@ -2,6 +2,8 @@ from typing import Optional, List, Dict
 from datetime import datetime
 from ..database import get_database
 from ..models.task import Task, TaskCreate, TaskUpdate, TaskDependency, TaskProgress, TaskStatus
+from ..routers import manager
+import json
 
 class TaskService:
     def __init__(self):
@@ -17,6 +19,9 @@ class TaskService:
         ).dict()
         result = await self.db.tasks.insert_one(task_dict)
         created_task = await self.db.tasks.find_one({"_id": result.inserted_id})
+        # Broadcast task creation event via WebSocket
+        message = json.dumps({"event": "task_created", "data": task_dict})
+        await manager.broadcast(message)
         return Task(**created_task)
 
     async def update_task(self, task_id: str, task_update: TaskUpdate, user) -> Optional[Task]:
@@ -37,6 +42,9 @@ class TaskService:
         if result.modified_count == 0:
             return None
         updated_task = await self.db.tasks.find_one({"_id": task_id})
+        # Broadcast task update event via WebSocket
+        message = json.dumps({"event": "task_updated", "data": update_data})
+        await manager.broadcast(message)
         return Task(**updated_task)
 
     async def get_task(self, task_id: str) -> Optional[Task]:

@@ -3,7 +3,7 @@ from pymongo.errors import ConnectionFailure
 import os
 
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-DATABASE_NAME = "gravitypm"
+DATABASE_NAME = os.getenv("DATABASE_NAME", "gravitypm")
 
 client: AsyncIOMotorClient = None
 database = None

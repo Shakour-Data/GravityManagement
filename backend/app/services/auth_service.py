@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import secrets
 import httpx
-from jose import JWTError, jwt
+import jwt
+from jwt import ExpiredSignatureError, InvalidTokenError
 from passlib.context import CryptContext
 from ..database import get_database
 from ..models.user import UserInDB

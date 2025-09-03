@@ -1,12 +1,12 @@
 # TODO List for GravityPM Project Execution
 
-## Overall Progress: ~60%
+## Overall Progress: ~70%
 
 ### Section Progress
 - Project Setup and Planning: 100%
 - Backend Development: 100%
-- Frontend Development: ~70%
-- Testing and Quality Assurance: ~25%
+- Frontend Development: ~80%
+- Testing and Quality Assurance: ~40%
 - Deployment and Operations: 0%
 - Maintenance and Support: 0%
 - Future Enhancements: 0%

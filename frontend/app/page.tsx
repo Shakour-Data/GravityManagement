@@ -1,6 +1,61 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { Suspense } from 'react'
+import LazyLoad from '@/components/LazyLoad'
+
+function FeatureCard({ title, description, icon }: { title: string; description: string; icon: string }) {
+  return (
+    <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
+      <h2 className="mb-3 text-2xl font-semibold">
+        {title}{' '}
+        <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
+          {icon}
+        </span>
+      </h2>
+      <p className="m-0 max-w-[30ch] text-sm opacity-50">
+        {description}
+      </p>
+    </div>
+  )
+}
+
+function FeaturesSection() {
+  return (
+    <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
+      <LazyLoad>
+        <FeatureCard
+          title="Projects"
+          description="Manage your projects with ease."
+          icon="📁"
+        />
+      </LazyLoad>
+
+      <LazyLoad>
+        <FeatureCard
+          title="Tasks"
+          description="Track tasks and progress."
+          icon="✅"
+        />
+      </LazyLoad>
+
+      <LazyLoad>
+        <FeatureCard
+          title="Resources"
+          description="Allocate and manage resources."
+          icon="⚙️"
+        />
+      </LazyLoad>
+
+      <LazyLoad>
+        <FeatureCard
+          title="GitHub"
+          description="Integrate with GitHub for automation."
+          icon="🔗"
+        />
+      </LazyLoad>
+    </div>
+  )
+}
 
 export default function Home() {
   return (
@@ -19,54 +74,9 @@ export default function Home() {
         </h1>
       </div>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className="mb-3 text-2xl font-semibold">
-            Projects{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Manage your projects with ease.
-          </p>
-        </div>
-
-        <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className="mb-3 text-2xl font-semibold">
-            Tasks{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Track tasks and progress.
-          </p>
-        </div>
-
-        <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className="mb-3 text-2xl font-semibold">
-            Resources{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Allocate and manage resources.
-          </p>
-        </div>
-
-        <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className="mb-3 text-2xl font-semibold">
-            GitHub{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Integrate with GitHub for automation.
-          </p>
-        </div>
-      </div>
+      <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded h-32 mb-32"></div>}>
+        <FeaturesSection />
+      </Suspense>
     </main>
   )
 }

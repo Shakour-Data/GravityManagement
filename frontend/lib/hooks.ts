@@ -233,8 +233,15 @@ export function useUsers() {
   return useApi('/users')
 }
 
+interface DashboardStats {
+  totalProjects: number
+  activeTasks: number
+  teamMembers: number
+  upcomingDeadlines: number
+}
+
 export function useDashboardStats() {
-  return useApi('/dashboard/stats')
+  return useApi<DashboardStats>('/dashboard/stats')
 }
 
 // Mutation hooks

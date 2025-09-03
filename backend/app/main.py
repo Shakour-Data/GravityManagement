@@ -31,10 +31,13 @@ app.add_middleware(
 # Database events
 @app.on_event("startup")
 async def startup_event():
-    await connect_to_mongo()
-    from .database import create_indexes
-    await create_indexes()
-    await cache_service.initialize()
+    try:
+        await connect_to_mongo()
+        from .database import create_indexes
+        await create_indexes()
+        await cache_service.initialize()
+    except Exception as e:
+        print(f"Database connection failed: {e}. Running without database for demo.")
 
 @app.on_event("shutdown")
 async def shutdown_event():

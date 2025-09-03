@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { useTasks, useUpdateTask } from '@/lib/hooks'
+import { useTasks, useUpdateTask, useRealtimeUpdates } from '@/lib/hooks'
 import { Loader2, Plus } from 'lucide-react'
 import Link from 'next/link'
 
@@ -24,10 +24,19 @@ export default function TaskBoard() {
   const { t } = useTranslation('common')
   const { data: tasksData, loading, error } = useTasks()
   const updateTask = useUpdateTask('')
+  const { data: realtimeData, connected } = useRealtimeUpdates('/updates')
 
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const tasks = Array.isArray(tasksData) ? tasksData : []
+
+  // Trigger refresh when real-time update is received
+  React.useEffect(() => {
+    if (realtimeData) {
+      setRefreshKey(prev => prev + 1)
+    }
+  }, [realtimeData])
 
   const columns = [
     { id: 'todo', title: t('todo', 'To Do'), color: 'bg-gray-100' },
@@ -78,7 +87,15 @@ export default function TaskBoard() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t('taskBoard', 'Task Board')}</h1>
+        <div>
+          <h1 className="text-3xl font-bold">{t('taskBoard', 'Task Board')}</h1>
+          <div className="flex items-center mt-2">
+            <div className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <span className="text-sm text-gray-600">
+              {connected ? 'Real-time connected' : 'Real-time disconnected'}
+            </span>
+          </div>
+        </div>
         <Link href="/tasks/create">
           <Button>
             <Plus className="h-4 w-4 mr-2" />

@@ -6,7 +6,8 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 limiter = Limiter(key_func=get_remote_address)
-from jose import JWTError, jwt
+import jwt
+from jwt import ExpiredSignatureError, InvalidTokenError
 from passlib.context import CryptContext
 from ..database import get_database
 from ..models.user import User, UserInDB, UserCreate, Token, TokenData
@@ -42,7 +43,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
-    except JWTError:
+    except (ExpiredSignatureError, InvalidTokenError):
         raise credentials_exception
 
     db = get_database()

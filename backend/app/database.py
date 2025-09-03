@@ -34,7 +34,7 @@ async def create_indexes():
     Create necessary indexes for collections to improve query performance.
     """
     db = get_database()
-    if not db:
+    if db is None:
         raise Exception("Database connection is not established")
 
     # Users collection indexes

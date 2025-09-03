@@ -74,7 +74,7 @@ class TestResourcesRouter:
         mock_db.resources.find_one = AsyncMock(return_value=mock_resource_doc)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('backend.app.routers.resources.get_current_user', return_value=mock_user):
             resource_data = {
                 "name": "Test Resource",
                 "type": "human",
@@ -98,7 +98,7 @@ class TestResourcesRouter:
         mock_db.projects.find_one = AsyncMock(return_value=None)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('backend.app.routers.resources.get_current_user', return_value=mock_user):
             resource_data = {
                 "name": "Test Resource",
                 "type": "human",
@@ -151,7 +151,7 @@ class TestResourcesRouter:
         mock_db.resources.find.return_value.to_list = AsyncMock(return_value=mock_resources)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('backend.app.routers.resources.get_current_user', return_value=mock_user):
             response = client.get("/resources/")
 
             assert response.status_code == 200

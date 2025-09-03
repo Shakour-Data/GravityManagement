@@ -2,6 +2,8 @@ from typing import Optional, List
 from datetime import datetime
 from ..database import get_database
 from ..models.project import Project, ProjectCreate, ProjectUpdate, ProjectTimeline, TimelineMilestone
+from ..routers import manager
+import json
 
 class ProjectService:
     def __init__(self):
@@ -18,6 +20,9 @@ class ProjectService:
         project_dict["team_members"] = [owner.username]
         result = await self.db.projects.insert_one(project_dict)
         created_project = await self.db.projects.find_one({"_id": result.inserted_id})
+        # Broadcast project creation event via WebSocket
+        message = json.dumps({"event": "project_created", "data": project_dict})
+        await manager.broadcast(message)
         return Project(**created_project)
 
     async def update_project(self, project_id: str, project_update: ProjectUpdate, user) -> Optional[Project]:
@@ -27,6 +32,9 @@ class ProjectService:
         if result.modified_count == 0:
             return None
         updated_project = await self.db.projects.find_one({"_id": project_id})
+        # Broadcast project update event via WebSocket
+        message = json.dumps({"event": "project_updated", "data": update_data})
+        await manager.broadcast(message)
         return Project(**updated_project)
 
     async def get_project(self, project_id: str, user=None) -> Optional[Project]:

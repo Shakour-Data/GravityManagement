@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { Calendar, Users, Folder, CheckCircle, Loader2, TrendingUp, BarChart3 } from 'lucide-react'
-import { useDashboardStats, useProjects, useTasks, useGitHubData } from '@/lib/hooks'
+import { useDashboardStats, useProjects, useTasks, useGitHubData, useRealtimeUpdates } from '@/lib/hooks'
 import { Chart } from '@/components/ui/chart'
 import { GitHubIntegration } from '@/components/GitHubIntegration'
 
@@ -21,6 +21,16 @@ export default function DashboardPage() {
   const { data: projectsData, loading: projectsLoading, error: projectsError } = useProjects()
   const { data: tasksData, loading: tasksLoading, error: tasksError } = useTasks()
   const { data: githubData, loading: githubLoading, error: githubError } = useGitHubData()
+  const { data: realtimeData, connected } = useRealtimeUpdates('/updates')
+
+  const [refreshKey, setRefreshKey] = React.useState(0)
+
+  // Trigger refresh when real-time update is received
+  React.useEffect(() => {
+    if (realtimeData) {
+      setRefreshKey(prev => prev + 1)
+    }
+  }, [realtimeData])
 
   // Process stats data
   const stats = statsData ? [
@@ -50,7 +60,17 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">{t('dashboard')}</h1>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">{t('dashboard')}</h1>
+          <div className="flex items-center mt-2">
+            <div className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <span className="text-sm text-gray-600">
+              {connected ? 'Real-time connected' : 'Real-time disconnected'}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

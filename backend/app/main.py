@@ -5,6 +5,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from .routers import auth, projects, tasks, resources, github_integration, rules
+from .routers import ws_router
 from .database import connect_to_mongo, close_mongo_connection
 from .services.cache_service import cache_service
 
@@ -40,12 +41,13 @@ async def shutdown_event():
     await close_mongo_connection()
 
 # Include routers
-app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
-app.include_router(projects.router, prefix="/projects", tags=["Projects"])
-app.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
-app.include_router(resources.router, prefix="/resources", tags=["Resources"])
-app.include_router(rules.router, prefix="/rules", tags=["Rules"])
-app.include_router(github_integration.router, prefix="/github", tags=["GitHub Integration"])
+app.include_router(auth, prefix="/auth", tags=["Authentication"])
+app.include_router(projects, prefix="/projects", tags=["Projects"])
+app.include_router(tasks, prefix="/tasks", tags=["Tasks"])
+app.include_router(resources, prefix="/resources", tags=["Resources"])
+app.include_router(rules, prefix="/rules", tags=["Rules"])
+app.include_router(github_integration, prefix="/github", tags=["GitHub Integration"])
+app.include_router(ws_router, prefix="/ws", tags=["WebSocket"])
 
 @app.get("/")
 async def root():

@@ -1,13 +1,13 @@
 # TODO List for GravityPM Project Execution
 
-## Overall Progress: ~90%
+## Overall Progress: ~85%
 
 ### Section Progress
 - Project Setup and Planning: 100%
 - Backend Development: 100%
-- Frontend Development: ~95%
-- Testing and Quality Assurance: ~80%
-- Deployment and Operations: ~60%
+- Frontend Development: ~70%
+- Testing and Quality Assurance: ~75%
+- Deployment and Operations: ~40%
 - Maintenance and Support: 0%
 - Future Enhancements: 0%
 
@@ -142,14 +142,14 @@
 - [x] Implement authentication with backend
 - [x] Create API hooks for data fetching
 - [x] Add error handling for API calls
-- [x] Implement real-time updates (WebSocket/SSE)
+- [ ] Implement real-time updates (WebSocket/SSE)
 
 ## 4. Testing and Quality Assurance
 ### 4.1 Backend Testing
 - [x] Set up pytest configuration
 - [x] Write unit tests for services
-- [ ] Write integration tests for routers
-- [ ] Write tests for GitHub integration
+- [x] Write integration tests for routers
+- [x] Write tests for GitHub integration
 - [ ] Add performance tests
 - [ ] Implement security testing
 

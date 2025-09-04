@@ -1,0 +1,342 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-8.4.1, pluggy-1.6.0 -- E:\Shakour\MyProjects\GravityManagement\backend\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: E:\Shakour\MyProjects\GravityManagement\backend
+configfile: pytest.ini
+plugins: anyio-4.10.0, asyncio-1.1.0
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 89 items / 8 errors
+
+=================================== ERRORS ====================================
+_________________ ERROR collecting tests/test_auth_router.py __________________
+tests\test_auth_router.py:12: in <module>
+    from backend.app.main import app
+app\main.py:7: in <module>
+    from .routers import auth, projects, tasks, resources, github_integration, rules
+app\routers\__init__.py:1: in <module>
+    from .auth import router as auth
+app\routers\auth.py:95: in <module>
+    @router.post("/token", response_model=Token)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\routing.py:995: in decorator
+    self.add_api_route(
+venv\Lib\site-packages\fastapi\routing.py:934: in add_api_route
+    route = route_class(
+venv\Lib\site-packages\fastapi\routing.py:555: in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\dependencies\utils.py:292: in get_dependant
+    sub_dependant = get_param_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:126: in get_param_sub_dependant
+    return get_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:162: in get_sub_dependant
+    sub_dependant = get_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:285: in get_dependant
+    param_details = analyze_param(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:482: in analyze_param
+    ensure_multipart_is_installed()
+venv\Lib\site-packages\fastapi\dependencies\utils.py:115: in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+E   RuntimeError: Form data requires "python-multipart" to be installed. 
+E   You can install "python-multipart" with: 
+E   
+E   pip install python-multipart
+_______________ ERROR collecting tests/test_backend_services.py _______________
+tests\test_backend_services.py:9: in <module>
+    from backend.app.main import app
+app\main.py:7: in <module>
+    from .routers import auth, projects, tasks, resources, github_integration, rules
+app\routers\__init__.py:1: in <module>
+    from .auth import router as auth
+app\routers\auth.py:95: in <module>
+    @router.post("/token", response_model=Token)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\routing.py:995: in decorator
+    self.add_api_route(
+venv\Lib\site-packages\fastapi\routing.py:934: in add_api_route
+    route = route_class(
+venv\Lib\site-packages\fastapi\routing.py:555: in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\dependencies\utils.py:292: in get_dependant
+    sub_dependant = get_param_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:126: in get_param_sub_dependant
+    return get_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:162: in get_sub_dependant
+    sub_dependant = get_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:285: in get_dependant
+    param_details = analyze_param(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:482: in analyze_param
+    ensure_multipart_is_installed()
+venv\Lib\site-packages\fastapi\dependencies\utils.py:115: in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+E   RuntimeError: Form data requires "python-multipart" to be installed. 
+E   You can install "python-multipart" with: 
+E   
+E   pip install python-multipart
+__________ ERROR collecting tests/test_github_integration_router.py ___________
+tests\test_github_integration_router.py:12: in <module>
+    from backend.app.main import app
+app\main.py:7: in <module>
+    from .routers import auth, projects, tasks, resources, github_integration, rules
+app\routers\__init__.py:1: in <module>
+    from .auth import router as auth
+app\routers\auth.py:95: in <module>
+    @router.post("/token", response_model=Token)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\routing.py:995: in decorator
+    self.add_api_route(
+venv\Lib\site-packages\fastapi\routing.py:934: in add_api_route
+    route = route_class(
+venv\Lib\site-packages\fastapi\routing.py:555: in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\dependencies\utils.py:292: in get_dependant
+    sub_dependant = get_param_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:126: in get_param_sub_dependant
+    return get_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:162: in get_sub_dependant
+    sub_dependant = get_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:285: in get_dependant
+    param_details = analyze_param(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:482: in analyze_param
+    ensure_multipart_is_installed()
+venv\Lib\site-packages\fastapi\dependencies\utils.py:115: in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+E   RuntimeError: Form data requires "python-multipart" to be installed. 
+E   You can install "python-multipart" with: 
+E   
+E   pip install python-multipart
+_______________ ERROR collecting tests/test_project_service.py ________________
+tests\test_project_service.py:9: in <module>
+    from backend.app.services.project_service import ProjectService
+app\services\project_service.py:5: in <module>
+    from ..routers import manager
+app\routers\__init__.py:1: in <module>
+    from .auth import router as auth
+app\routers\auth.py:95: in <module>
+    @router.post("/token", response_model=Token)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\routing.py:995: in decorator
+    self.add_api_route(
+venv\Lib\site-packages\fastapi\routing.py:934: in add_api_route
+    route = route_class(
+venv\Lib\site-packages\fastapi\routing.py:555: in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\dependencies\utils.py:292: in get_dependant
+    sub_dependant = get_param_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:126: in get_param_sub_dependant
+    return get_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:162: in get_sub_dependant
+    sub_dependant = get_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:285: in get_dependant
+    param_details = analyze_param(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:482: in analyze_param
+    ensure_multipart_is_installed()
+venv\Lib\site-packages\fastapi\dependencies\utils.py:115: in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+E   RuntimeError: Form data requires "python-multipart" to be installed. 
+E   You can install "python-multipart" with: 
+E   
+E   pip install python-multipart
+_______________ ERROR collecting tests/test_projects_router.py ________________
+tests\test_projects_router.py:12: in <module>
+    from backend.app.main import app
+app\main.py:7: in <module>
+    from .routers import auth, projects, tasks, resources, github_integration, rules
+app\routers\__init__.py:1: in <module>
+    from .auth import router as auth
+app\routers\auth.py:95: in <module>
+    @router.post("/token", response_model=Token)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\routing.py:995: in decorator
+    self.add_api_route(
+venv\Lib\site-packages\fastapi\routing.py:934: in add_api_route
+    route = route_class(
+venv\Lib\site-packages\fastapi\routing.py:555: in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\dependencies\utils.py:292: in get_dependant
+    sub_dependant = get_param_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:126: in get_param_sub_dependant
+    return get_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:162: in get_sub_dependant
+    sub_dependant = get_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:285: in get_dependant
+    param_details = analyze_param(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:482: in analyze_param
+    ensure_multipart_is_installed()
+venv\Lib\site-packages\fastapi\dependencies\utils.py:115: in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+E   RuntimeError: Form data requires "python-multipart" to be installed. 
+E   You can install "python-multipart" with: 
+E   
+E   pip install python-multipart
+_______________ ERROR collecting tests/test_resources_router.py _______________
+tests\test_resources_router.py:12: in <module>
+    from backend.app.main import app
+app\main.py:7: in <module>
+    from .routers import auth, projects, tasks, resources, github_integration, rules
+app\routers\__init__.py:1: in <module>
+    from .auth import router as auth
+app\routers\auth.py:95: in <module>
+    @router.post("/token", response_model=Token)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\routing.py:995: in decorator
+    self.add_api_route(
+venv\Lib\site-packages\fastapi\routing.py:934: in add_api_route
+    route = route_class(
+venv\Lib\site-packages\fastapi\routing.py:555: in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\dependencies\utils.py:292: in get_dependant
+    sub_dependant = get_param_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:126: in get_param_sub_dependant
+    return get_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:162: in get_sub_dependant
+    sub_dependant = get_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:285: in get_dependant
+    param_details = analyze_param(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:482: in analyze_param
+    ensure_multipart_is_installed()
+venv\Lib\site-packages\fastapi\dependencies\utils.py:115: in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+E   RuntimeError: Form data requires "python-multipart" to be installed. 
+E   You can install "python-multipart" with: 
+E   
+E   pip install python-multipart
+_________________ ERROR collecting tests/test_task_service.py _________________
+tests\test_task_service.py:9: in <module>
+    from backend.app.services.task_service import TaskService
+app\services\task_service.py:5: in <module>
+    from ..routers import manager
+app\routers\__init__.py:1: in <module>
+    from .auth import router as auth
+app\routers\auth.py:95: in <module>
+    @router.post("/token", response_model=Token)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\routing.py:995: in decorator
+    self.add_api_route(
+venv\Lib\site-packages\fastapi\routing.py:934: in add_api_route
+    route = route_class(
+venv\Lib\site-packages\fastapi\routing.py:555: in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\dependencies\utils.py:292: in get_dependant
+    sub_dependant = get_param_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:126: in get_param_sub_dependant
+    return get_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:162: in get_sub_dependant
+    sub_dependant = get_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:285: in get_dependant
+    param_details = analyze_param(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:482: in analyze_param
+    ensure_multipart_is_installed()
+venv\Lib\site-packages\fastapi\dependencies\utils.py:115: in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+E   RuntimeError: Form data requires "python-multipart" to be installed. 
+E   You can install "python-multipart" with: 
+E   
+E   pip install python-multipart
+_________________ ERROR collecting tests/test_tasks_router.py _________________
+tests\test_tasks_router.py:12: in <module>
+    from app.main import app
+app\main.py:7: in <module>
+    from .routers import auth, projects, tasks, resources, github_integration, rules
+app\routers\__init__.py:1: in <module>
+    from .auth import router as auth
+app\routers\auth.py:95: in <module>
+    @router.post("/token", response_model=Token)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\routing.py:995: in decorator
+    self.add_api_route(
+venv\Lib\site-packages\fastapi\routing.py:934: in add_api_route
+    route = route_class(
+venv\Lib\site-packages\fastapi\routing.py:555: in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\fastapi\dependencies\utils.py:292: in get_dependant
+    sub_dependant = get_param_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:126: in get_param_sub_dependant
+    return get_sub_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:162: in get_sub_dependant
+    sub_dependant = get_dependant(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:285: in get_dependant
+    param_details = analyze_param(
+venv\Lib\site-packages\fastapi\dependencies\utils.py:482: in analyze_param
+    ensure_multipart_is_installed()
+venv\Lib\site-packages\fastapi\dependencies\utils.py:115: in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+E   RuntimeError: Form data requires "python-multipart" to be installed. 
+E   You can install "python-multipart" with: 
+E   
+E   pip install python-multipart
+============================== warnings summary ===============================
+app\models\user.py:15
+app\models\user.py:15
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\user.py:15: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at: datetime = datetime.utcnow()
+
+app\models\user.py:16
+app\models\user.py:16
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\user.py:16: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at: datetime = datetime.utcnow()
+
+app\models\project.py:43
+app\models\project.py:43
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\project.py:43: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at: datetime = datetime.utcnow()
+
+app\models\project.py:44
+app\models\project.py:44
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\project.py:44: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at: datetime = datetime.utcnow()
+
+app\models\task.py:20
+app\models\task.py:20
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\task.py:20: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    last_updated: datetime = datetime.utcnow()
+
+app\models\task.py:35
+app\models\task.py:35
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\task.py:35: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at: datetime = datetime.utcnow()
+
+app\models\task.py:36
+app\models\task.py:36
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\task.py:36: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at: datetime = datetime.utcnow()
+
+app\models\resource.py:44
+app\models\resource.py:44
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\resource.py:44: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at: datetime = datetime.utcnow()
+
+app\models\resource.py:45
+app\models\resource.py:45
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\resource.py:45: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at: datetime = datetime.utcnow()
+
+app\models\rule.py:25
+app\models\rule.py:25
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\rule.py:25: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at: datetime = datetime.utcnow()
+
+app\models\rule.py:26
+app\models\rule.py:26
+  E:\Shakour\MyProjects\GravityManagement\backend\app\models\rule.py:26: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    updated_at: datetime = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/test_auth_router.py - RuntimeError: Form data requires "python-mu...
+ERROR tests/test_backend_services.py - RuntimeError: Form data requires "pyth...
+ERROR tests/test_github_integration_router.py - RuntimeError: Form data requi...
+ERROR tests/test_project_service.py - RuntimeError: Form data requires "pytho...
+ERROR tests/test_projects_router.py - RuntimeError: Form data requires "pytho...
+ERROR tests/test_resources_router.py - RuntimeError: Form data requires "pyth...
+ERROR tests/test_task_service.py - RuntimeError: Form data requires "python-m...
+ERROR tests/test_tasks_router.py - RuntimeError: Form data requires "python-m...
+!!!!!!!!!!!!!!!!!!! Interrupted: 8 errors during collection !!!!!!!!!!!!!!!!!!!
+======================= 22 warnings, 8 errors in 5.80s ========================

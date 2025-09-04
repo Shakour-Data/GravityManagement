@@ -9,17 +9,25 @@ router = APIRouter()
 
 @router.post("/webhook")
 async def github_webhook(request: Request):
-    payload = await request.json()
-    event_type = request.headers.get("X-GitHub-Event")
-    signature = request.headers.get("X-Hub-Signature-256")
+    try:
+        payload = await request.json()
+        event_type = request.headers.get("X-GitHub-Event")
+        signature = request.headers.get("X-Hub-Signature-256")
 
-    if not event_type:
-        raise HTTPException(status_code=400, detail="Missing GitHub event type")
+        if not event_type:
+            raise HTTPException(status_code=400, detail="Missing GitHub event type")
 
-    # Process the webhook with signature verification
-    result = await process_github_webhook(event_type, payload, signature)
+        # Process the webhook with signature verification
+        result = await process_github_webhook(event_type, payload, signature)
 
-    return result
+        return result
+    except HTTPException:
+        # Re-raise HTTP exceptions as they are already properly formatted
+        raise
+    except Exception as e:
+        # Log the error and return a 500 response
+        print(f"Error processing GitHub webhook: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error processing webhook")
 
 @router.post("/sync")
 async def sync_repository(repo_full_name: str, project_id: str):

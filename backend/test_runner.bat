@@ -1,0 +1,9 @@
+@echo off
+echo Activating virtual environment...
+call venv\Scripts\activate.bat
+echo Installing dependencies...
+pip install -r requirements.txt
+echo Running tests...
+python -m pytest tests/ -v --tb=short
+echo Tests completed.
+pause

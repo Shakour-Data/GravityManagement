@@ -1,13 +1,13 @@
  # Final Test Report - GravityManagement
 
 ## Executive Summary
-This report summarizes the comprehensive testing performed on the GravityManagement system according to the test strategy outlined in `Docs/Test_doc.md`. The testing covered both backend and frontend components with focus on functional, integration, and non-functional aspects.
+This report summarizes the comprehensive testing performed on the GravityManagement system according to the test strategy outlined in `docs/Test_doc.md`. The testing covered both backend and frontend components with focus on functional, integration, and non-functional aspects.
 
 ## Test Environment
 - **Date**: December 28, 2024
 - **Tester**: BLACKBOXAI
 - **System**: GravityManagement (Backend + Frontend)
-- **Test Strategy Reference**: `Docs/Test_doc.md`
+- **Test Strategy Reference**: `docs/Test_doc.md`
 
 ## Backend Testing Results
 

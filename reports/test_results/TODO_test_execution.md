@@ -21,7 +21,7 @@
 - [ ] Test authentication flow end-to-end
 
 ## Performance Tests
-- [ ] Execute performance tests as per `Docs/Test_doc.md`
+- [ ] Execute performance tests as per `docs/Test_doc.md`
 - [ ] Test API response times (< 2 seconds target)
 - [ ] Test frontend load times (< 3 seconds target)
 - [ ] Document performance metrics

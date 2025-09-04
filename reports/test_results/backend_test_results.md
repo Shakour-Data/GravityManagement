@@ -92,6 +92,6 @@
 
 ## Notes
 - Tests are executed with asyncio support for async functions.
-- All tests should pass according to the test strategy in `Docs/Test_doc.md`.
+- All tests should pass according to the test strategy in `docs/Test_doc.md`.
 - Results are saved in this file for documentation purposes.
 - Environment setup completed successfully, working on test execution.

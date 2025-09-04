@@ -3,7 +3,7 @@
 ## Test Execution Overview
 - **Date**: [Current Date]
 - **Tester**: BLACKBOXAI
-- **Test Strategy**: Comprehensive testing following `Docs/Test_doc.md`
+- **Test Strategy**: Comprehensive testing following `docs/Test_doc.md`
 - **Test Types**: Unit, Integration, Performance, Security, UI/UX
 
 ## Backend Test Results
@@ -62,7 +62,7 @@
   - Responsive design considerations
 
 ## Test Documentation Reference
-- **Strategy Document**: `Docs/Test_doc.md`
+- **Strategy Document**: `docs/Test_doc.md`
 - **Contains**: Detailed test strategy, processes, test cases
 - **Coverage**: Functional, non-functional, integration tests, debugging
 

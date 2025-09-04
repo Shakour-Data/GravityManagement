@@ -1,0 +1,53 @@
+=== GRAVITYMANAGEMENT DEBUG INFORMATION ===
+
+ISSUES IDENTIFIED:
+1. 500 Internal Server Errors
+2. WebSocket ERR_CONNECTION_REFUSED to ws://localhost:8000/ws/updates
+3. API requests fail with ERR_CONNECTION_REFUSED
+4. Frontend localhost:3000 connection refused
+
+BACKEND SETUP:
+- FastAPI application on port 8000
+- Routers: auth, projects, tasks, resources, github_integration, rules, ws_router
+- Database: MongoDB (localhost:27017), falls back to demo mode if connection fails
+- WebSocket manager for real-time updates
+- CORS enabled for localhost:3000
+- Rate limiting with slowapi
+
+FRONTEND SETUP:
+- Next.js application on port 3000
+- Uses Vite for development
+- API calls to backend on localhost:8000
+
+POTENTIAL ROOT CAUSES:
+1. Database connection failure: MongoDB not running, but app continues without database
+2. Routers accessing database when it's None, causing AttributeError or similar
+3. WebSocket connection issues due to server not running or port conflicts
+4. Frontend build issues or port conflicts
+5. Missing dependencies or environment variables
+
+CODE ANALYSIS:
+- main.py: Proper setup, catches database connection exceptions
+- database.py: Raises ConnectionFailure if MongoDB not available
+- auth.py: Uses get_database() which returns None if connection failed
+- WebSocket router: Basic echo implementation
+- Connection manager: Handles connections and broadcasting
+
+NEXT STEPS:
+1. Check if MongoDB is running
+2. Ensure backend server is running on port 8000
+3. Ensure frontend server is running on port 3000
+4. Add error handling for database None in routers
+5. Test WebSocket connections
+6. Test API endpoints
+7. Verify CORS and rate limiting
+
+LOGS TO CHECK:
+- Backend console output for database connection errors
+- Frontend console for API call errors
+- WebSocket connection attempts
+- Server startup logs
+
+DEPENDENCIES:
+Backend: FastAPI, uvicorn, motor, pymongo, redis, pydantic, jwt, passlib, slowapi
+Frontend: Next.js, React, Vite, Tailwind CSS

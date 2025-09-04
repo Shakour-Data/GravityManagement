@@ -11,11 +11,13 @@ router = APIRouter()
 @router.post("/", response_model=Resource)
 async def create_resource(resource: ResourceCreate, current_user: User = Depends(get_current_user)):
     db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available")
     # Check if project exists and user has access
     project = await db.projects.find_one({"_id": resource.project_id, "$or": [{"owner_id": current_user.username}, {"team_members": current_user.username}]})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found or not authorized")
-    
+
     resource_dict = resource.dict()
     result = await db.resources.insert_one(resource_dict)
     created_resource = await db.resources.find_one({"_id": result.inserted_id})

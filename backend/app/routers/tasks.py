@@ -11,11 +11,13 @@ router = APIRouter()
 @router.post("/", response_model=Task)
 async def create_task(task: TaskCreate, current_user: User = Depends(get_current_user)):
     db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available")
     # Check if project exists and user has access
     project = await db.projects.find_one({"_id": task.project_id, "$or": [{"owner_id": current_user.username}, {"team_members": current_user.username}]})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found or not authorized")
-    
+
     task_dict = task.dict()
     result = await db.tasks.insert_one(task_dict)
     created_task = await db.tasks.find_one({"_id": result.inserted_id})

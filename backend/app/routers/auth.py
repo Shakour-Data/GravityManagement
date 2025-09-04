@@ -47,6 +47,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
 
     db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available")
     user = await db.users.find_one({"username": token_data.username})
     if user is None:
         raise credentials_exception

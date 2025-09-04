@@ -11,6 +11,8 @@ router = APIRouter()
 @router.post("/", response_model=Project)
 async def create_project(project: ProjectCreate, current_user: User = Depends(get_current_user)):
     db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available")
     project_dict = project.dict()
     project_dict["owner_id"] = current_user.username
     project_dict["team_members"] = [current_user.username]

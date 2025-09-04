@@ -7,27 +7,9 @@ from .rules import router as rules
 
 # WebSocket router for real-time updates
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from typing import List
+from ..services.websocket_manager import manager
 
 ws_router = APIRouter()
-
-# Simple WebSocket manager for demo purposes
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
-
-manager = ConnectionManager()
 
 @ws_router.websocket("/updates")
 async def websocket_endpoint(websocket: WebSocket):

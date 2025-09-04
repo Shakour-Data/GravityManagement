@@ -2,7 +2,7 @@ from typing import Optional, List, Dict
 from datetime import datetime
 from ..database import get_database
 from ..models.task import Task, TaskCreate, TaskUpdate, TaskDependency, TaskProgress, TaskStatus
-from ..routers import manager
+from .websocket_manager import manager
 import json
 
 class TaskService:

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
@@ -10,8 +10,9 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert } from '@/components/ui/alert'
 import { Loader2, Edit, Trash2, ArrowLeft, Calendar, Users, CheckCircle } from 'lucide-react'
-import { useProject, useTasks, useDeleteProject } from '@/lib/hooks'
+import { useProject, useTasks, useDeleteProject, useRealtimeUpdates } from '@/lib/hooks'
 import { Chart } from '@/components/ui/chart'
+import WBSTree from '@/components/WBSTree'
 
 interface Project {
   id: string
@@ -41,9 +42,23 @@ export default function ProjectDetailsPage() {
   const id = params.id as string
 
   // Fetch project and tasks
-  const { data: project, loading: projectLoading, error: projectError } = useProject(id)
+  const { data: projectData, loading: projectLoading, error: projectError } = useProject(id)
   const { data: tasksData, loading: tasksLoading } = useTasks(id)
   const deleteProject = useDeleteProject()
+
+  // Real-time updates
+  const { data: realtimeData, connected } = useRealtimeUpdates('/updates')
+
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  // Trigger refresh when real-time update is received
+  useEffect(() => {
+    if (realtimeData) {
+      setRefreshKey(prev => prev + 1)
+    }
+  }, [realtimeData])
+
+  const project = projectData as Project
 
   const handleDelete = async () => {
     if (window.confirm(t('confirmDeleteProject', 'Are you sure you want to delete this project?'))) {
@@ -94,6 +109,10 @@ export default function ProjectDetailsPage() {
             {t('back', 'Back')}
           </Button>
           <h1 className="text-3xl font-bold">{project.name}</h1>
+          <div className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          <span className="text-sm text-gray-600">
+            {connected ? 'Real-time connected' : 'Real-time disconnected'}
+          </span>
         </div>
         <div className="flex space-x-2">
           <Link href={`/projects/${id}/edit`}>
@@ -183,13 +202,33 @@ export default function ProjectDetailsPage() {
       {/* WBS Visualization */}
       <Card className="p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">{t('wbsVisualization', 'WBS Visualization')}</h2>
-        {taskStats.length > 0 ? (
-          <Chart
-            data={taskStats}
-            type="pie"
-            dataKey="value"
-            title=""
-            height={300}
+        {Array.isArray(tasksData) && tasksData.length > 0 ? (
+          <WBSTree
+            tasks={tasksData.map((task: any) => ({
+              ...task,
+              level: 0,
+              children: []
+            }))}
+            onTaskUpdate={(taskId, updates) => {
+              // Implement task update logic here
+              console.log('Update task', taskId, updates)
+            }}
+            onTaskMove={(taskId, newParentId) => {
+              // Implement task move logic here
+              console.log('Move task', taskId, newParentId)
+            }}
+            onTaskAdd={(parentId) => {
+              // Implement task add logic here
+              console.log('Add task under', parentId)
+            }}
+            onTaskDelete={(taskId) => {
+              // Implement task delete logic here
+              console.log('Delete task', taskId)
+            }}
+            onExport={(format) => {
+              // Implement export logic here
+              console.log('Export WBS as', format)
+            }}
           />
         ) : (
           <div className="flex items-center justify-center h-48 text-gray-500">

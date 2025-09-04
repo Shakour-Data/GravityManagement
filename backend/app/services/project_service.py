@@ -2,7 +2,7 @@ from typing import Optional, List
 from datetime import datetime
 from ..database import get_database
 from ..models.project import Project, ProjectCreate, ProjectUpdate, ProjectTimeline, TimelineMilestone
-from ..routers import manager
+from .websocket_manager import manager
 import json
 
 class ProjectService:

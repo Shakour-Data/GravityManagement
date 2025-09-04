@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useTranslation } from 'next-i18next'
 import Link from 'next/link'
@@ -12,7 +12,7 @@ import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { Loader2, Edit, Trash2, ArrowLeft, Calendar, Users, Package, DollarSign, Plus } from 'lucide-react'
-import { useResource, useUpdateResource, useDeleteResource } from '@/lib/hooks'
+import { useResource, useUpdateResource, useDeleteResource, useRealtimeUpdates } from '@/lib/hooks'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface Resource {

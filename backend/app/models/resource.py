@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 class ResourceType(str, Enum):
@@ -41,8 +41,8 @@ class Resource(BaseModel):
     location: Optional[str] = None
     allocations: List[ResourceAllocation] = []
     utilization_history: List[ResourceUtilization] = []
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    created_at: datetime = datetime.now(timezone.utc)
+    updated_at: datetime = datetime.now(timezone.utc)
 
     model_config = ConfigDict(populate_by_name=True)
 

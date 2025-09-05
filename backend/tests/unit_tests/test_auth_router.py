@@ -6,13 +6,13 @@ from fastapi.testclient import TestClient
 from fastapi import HTTPException
 from datetime import datetime
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "app")))
 
-from backend.app.main import app
-from backend.app.database import get_database
-from backend.app.models.user import UserCreate
-from backend.app.services.auth_service import get_password_hash
+from app.main import app
+from app.database import get_database
+from app.models.user import UserCreate
+from app.services.auth_service import get_password_hash
 
 
 class TestAuthRouter:
@@ -24,8 +24,8 @@ class TestAuthRouter:
     @pytest.fixture
     def client(self, mock_db):
         """Create a test client with mocked database"""
-        with patch('backend.app.routers.auth.get_database', return_value=mock_db):
-            with patch('backend.app.services.auth_service.get_database', return_value=mock_db):
+        with patch('app.routers.auth.get_database', return_value=mock_db):
+            with patch('app.services.auth_service.get_database', return_value=mock_db):
                 client = TestClient(app)
                 yield client
 

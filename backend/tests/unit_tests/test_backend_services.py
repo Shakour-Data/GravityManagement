@@ -6,14 +6,14 @@ from fastapi.testclient import TestClient
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.app.main import app
+from app.main import app
 
 client = TestClient(app)
 
 @pytest.mark.asyncio
 async def test_cache_service_basic():
     # Example test for cache service
-    from backend.app.services.cache_service import CacheService
+    from app.services.cache_service import CacheService
     cache = CacheService()
     await cache.set("test_key", "test_value")
     value = await cache.get("test_key")

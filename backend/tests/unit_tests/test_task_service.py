@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.app.services.task_service import TaskService
-from backend.app.models.task import Task
-from backend.app.services.exceptions import NotFoundError
+from app.services.task_service import TaskService
+from app.models.task import Task
+from app.services.exceptions import NotFoundError
 
 @pytest.mark.asyncio
 class TestTaskService:
@@ -19,8 +19,8 @@ class TestTaskService:
         return service
 
     async def test_create_task(self, task_service):
-        from backend.app.models.user import User
-        from backend.app.models.task import TaskCreate
+        from app.models.user import User
+        from app.models.task import TaskCreate
         task_data = TaskCreate(
             title="Test Task",
             description="A test task",
@@ -47,7 +47,7 @@ class TestTaskService:
         assert result.title == "Test Task"
 
     async def test_get_task(self, task_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         mock_task = {
             "_id": "task123",
@@ -67,7 +67,7 @@ class TestTaskService:
         assert result.title == "Test Task"
 
     async def test_get_task_not_found(self, task_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         task_service.db.tasks.find_one = AsyncMock(return_value=None)
 
@@ -75,8 +75,8 @@ class TestTaskService:
             await task_service.get_task("nonexistent", user)
 
     async def test_update_task(self, task_service):
-        from backend.app.models.user import User
-        from backend.app.models.task import TaskUpdate
+        from app.models.user import User
+        from app.models.task import TaskUpdate
         user = User(username="user123", email="user123@example.com")
         update_data = TaskUpdate(title="Updated Task")
         mock_task = {
@@ -96,7 +96,7 @@ class TestTaskService:
         assert result.title == "Updated Task"
 
     async def test_delete_task(self, task_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         mock_task = {
             "_id": "task123",

@@ -9,10 +9,10 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app")))
 
-from backend.app.main import app
-from backend.app.database import get_database
-from backend.app.models.project import ProjectCreate, ProjectUpdate
-from backend.app.models.user import User
+from app.main import app
+from app.database import get_database
+from app.models.project import ProjectCreate, ProjectUpdate
+from app.models.user import User
 
 
 class TestProjectsRouter:
@@ -29,9 +29,9 @@ class TestProjectsRouter:
     @pytest.fixture
     def client(self, mock_db, mock_project_service):
         """Create a test client with mocked database and services"""
-        with patch('backend.app.routers.projects.get_database', return_value=mock_db):
-            with patch('backend.app.routers.projects.project_service', mock_project_service):
-                with patch('backend.app.services.project_service.project_service', mock_project_service):
+        with patch('app.routers.projects.get_database', return_value=mock_db):
+            with patch('app.routers.projects.project_service', mock_project_service):
+                with patch('app.services.project_service.project_service', mock_project_service):
                     client = TestClient(app)
                     yield client
 
@@ -71,7 +71,7 @@ class TestProjectsRouter:
         mock_db.projects.find_one = AsyncMock(return_value=mock_project_doc)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             project_data = {
                 "name": "Test Project",
                 "description": "A test project",
@@ -123,7 +123,7 @@ class TestProjectsRouter:
         mock_db.projects.find.return_value.to_list = AsyncMock(return_value=mock_projects)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             response = client.get("/projects/")
 
             assert response.status_code == 200
@@ -151,7 +151,7 @@ class TestProjectsRouter:
         mock_db.projects.find_one = AsyncMock(return_value=mock_project)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             response = client.get("/projects/project123")
 
             assert response.status_code == 200
@@ -164,7 +164,7 @@ class TestProjectsRouter:
         mock_db.projects.find_one = AsyncMock(return_value=None)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             response = client.get("/projects/nonexistent")
 
             assert response.status_code == 404
@@ -207,7 +207,7 @@ class TestProjectsRouter:
         mock_db.projects.update_one = AsyncMock()
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             update_data = {
                 "name": "Updated Project",
                 "description": "Updated description",
@@ -226,7 +226,7 @@ class TestProjectsRouter:
         mock_db.projects.find_one = AsyncMock(return_value=None)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             update_data = {
                 "name": "Updated Project",
                 "description": "Updated description"
@@ -258,7 +258,7 @@ class TestProjectsRouter:
         mock_db.projects.delete_one = AsyncMock()
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             response = client.delete("/projects/project123")
 
             assert response.status_code == 200
@@ -270,7 +270,7 @@ class TestProjectsRouter:
         mock_db.projects.find_one = AsyncMock(return_value=None)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             response = client.delete("/projects/project123")
 
             assert response.status_code == 404
@@ -311,7 +311,7 @@ class TestProjectsRouter:
         mock_project_service.update_spent_amount = AsyncMock(return_value=mock_updated_project)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             response = client.post("/projects/project123/budget/spend", json=2500.0)
 
             assert response.status_code == 200
@@ -339,7 +339,7 @@ class TestProjectsRouter:
         mock_project_service.update_spent_amount = AsyncMock(side_effect=ValueError("Invalid amount"))
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             response = client.post("/projects/project123/budget/spend", json=-100.0)
 
             assert response.status_code == 400
@@ -374,7 +374,7 @@ class TestProjectsRouter:
         mock_project_service.get_budget_report = AsyncMock(return_value=mock_report)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             response = client.get("/projects/project123/budget/report")
 
             assert response.status_code == 200
@@ -410,7 +410,7 @@ class TestProjectsRouter:
         mock_project_service.check_budget_alert = AsyncMock(return_value=mock_alert)
 
         # Mock authentication
-        with patch('backend.app.routers.auth.get_current_user', return_value=mock_user):
+        with patch('app.routers.auth.get_current_user', return_value=mock_user):
             response = client.get("/projects/project123/budget/alert")
 
             assert response.status_code == 200

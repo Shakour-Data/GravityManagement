@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 import secrets
 import httpx
@@ -40,9 +40,9 @@ async def authenticate_user(username: str, password: str):
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -134,7 +134,7 @@ async def authenticate_or_create_github_user(github_user_data: Dict[str, Any], a
         # Update access token
         await db.users.update_one(
             {"_id": existing_user["_id"]},
-            {"$set": {"github_access_token": access_token, "updated_at": datetime.utcnow()}}
+            {"$set": {"github_access_token": access_token, "updated_at": datetime.now(timezone.utc)}}
         )
         return UserInDB(**existing_user)
 
@@ -148,7 +148,7 @@ async def authenticate_or_create_github_user(github_user_data: Dict[str, Any], a
             {"$set": {
                 "github_id": github_user_data["id"],
                 "github_access_token": access_token,
-                "updated_at": datetime.utcnow()
+                "updated_at": datetime.now(timezone.utc)
             }}
         )
         return UserInDB(**existing_user)
@@ -170,8 +170,8 @@ async def authenticate_or_create_github_user(github_user_data: Dict[str, Any], a
         "github_access_token": access_token,
         "role": "user",
         "disabled": False,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
     }
 
     result = await db.users.insert_one(user_dict)

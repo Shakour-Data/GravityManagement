@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.app.services.project_service import ProjectService
-from backend.app.models.project import Project
-from backend.app.services.exceptions import NotFoundError
+from app.services.project_service import ProjectService
+from app.models.project import Project
+from app.services.exceptions import NotFoundError
 
 @pytest.mark.asyncio
 class TestProjectService:
@@ -19,8 +19,8 @@ class TestProjectService:
         return service
 
     async def test_create_project(self, project_service):
-        from backend.app.models.user import User
-        from backend.app.models.project import ProjectCreate
+        from app.models.user import User
+        from app.models.project import ProjectCreate
         project_data = ProjectCreate(
             name="Test Project",
             description="A test project"
@@ -47,7 +47,7 @@ class TestProjectService:
         assert result.name == "Test Project"
 
     async def test_get_project(self, project_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         from datetime import datetime
         mock_project = {
@@ -67,7 +67,7 @@ class TestProjectService:
         assert result.name == "Test Project"
 
     async def test_get_project_not_found(self, project_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         project_service.db.projects.find_one = AsyncMock(return_value=None)
 
@@ -75,8 +75,8 @@ class TestProjectService:
             await project_service.get_project("nonexistent", user)
 
     async def test_update_project(self, project_service):
-        from backend.app.models.user import User
-        from backend.app.models.project import ProjectUpdate
+        from app.models.user import User
+        from app.models.project import ProjectUpdate
         user = User(username="user123", email="user123@example.com")
         update_data = ProjectUpdate(name="Updated Project")
         from datetime import datetime
@@ -106,7 +106,7 @@ class TestProjectService:
         assert result.name == "Updated Project"
 
     async def test_delete_project(self, project_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         from datetime import datetime
         project_service.db.projects.find_one = AsyncMock(return_value={

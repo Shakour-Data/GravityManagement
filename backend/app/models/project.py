@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator, Field, ConfigDict
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 class ProjectStatus(str, Enum):
@@ -40,8 +40,8 @@ class Project(BaseModel):
     budget_alert_threshold: float = Field(default=0.8, ge=0, le=1)  # Alert when spent > threshold * budget
     timeline: ProjectTimeline = ProjectTimeline()  # Project timeline with milestones
     team_members: List[str] = []  # List of user IDs
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    created_at: datetime = datetime.now(timezone.utc)
+    updated_at: datetime = datetime.now(timezone.utc)
 
     model_config = ConfigDict(populate_by_name=True)
 

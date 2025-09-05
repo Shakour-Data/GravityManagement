@@ -24,6 +24,15 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+
+    /* Added typography variables */
+    --font-primary: 'Vazirmatn', sans-serif;
+    --font-secondary: 'Inter', sans-serif;
+    --font-size-base: 16px;
+    --font-size-lg: 18px;
+    --font-size-sm: 14px;
+    --line-height-base: 1.5;
+    --line-height-heading: 1.2;
   }
 
   .dark {
@@ -55,5 +64,28 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-primary);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    color: var(--foreground);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-secondary);
+    line-height: var(--line-height-heading);
+    margin-bottom: 1rem;
+  }
+  p {
+    margin-bottom: 1rem;
+  }
+  a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  a:hover {
+    color: var(--primary-foreground);
+  }
+  button {
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }

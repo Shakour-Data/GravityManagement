@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 class TaskStatus(str, Enum):
@@ -17,7 +17,7 @@ class TaskProgress(BaseModel):
     percentage: float = 0.0
     estimated_hours: Optional[float] = None
     actual_hours: Optional[float] = None
-    last_updated: datetime = datetime.utcnow()
+    last_updated: datetime = datetime.now(timezone.utc)
 
 class Task(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
@@ -32,8 +32,8 @@ class Task(BaseModel):
     progress: TaskProgress = TaskProgress()
     priority: int = Field(default=1, ge=1, le=5)  # 1=low, 5=critical
     tags: List[str] = []
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    created_at: datetime = datetime.now(timezone.utc)
+    updated_at: datetime = datetime.now(timezone.utc)
 
     # Removed Config class as deprecated in Pydantic v2
 

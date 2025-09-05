@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 class RuleType(str, Enum):
@@ -22,8 +22,8 @@ class Rule(BaseModel):
     success_count: int = 0
     failure_count: int = 0
     average_execution_time: float = 0.0  # in seconds
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    created_at: datetime = datetime.now(timezone.utc)
+    updated_at: datetime = datetime.now(timezone.utc)
 
 class RuleCreate(BaseModel):
     name: str

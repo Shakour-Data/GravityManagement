@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict, Field, field_validator
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 class User(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
@@ -12,8 +12,8 @@ class User(BaseModel):
     role: str = Field("user", pattern="^(user|admin|manager)$")  # user, admin, manager
     github_id: Optional[str] = None
     github_access_token: Optional[str] = None
-    created_at: datetime = datetime.utcnow()
-    updated_at: datetime = datetime.utcnow()
+    created_at: datetime = datetime.now(timezone.utc)
+    updated_at: datetime = datetime.now(timezone.utc)
 
     # Removed Config class as deprecated in Pydantic v2
 

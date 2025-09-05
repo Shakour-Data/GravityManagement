@@ -8,7 +8,7 @@ import hashlib
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app")))
 
-from backend.app.services.github_service import (
+from app.services.github_service import (
     verify_github_signature,
     process_github_webhook,
     extract_event_data,
@@ -30,7 +30,7 @@ class TestGitHubService:
         ).hexdigest()
         signature = f"sha256={expected_signature}"
 
-        with patch('backend.app.services.github_service.GITHUB_WEBHOOK_SECRET', secret):
+        with patch('app.services.github_service.GITHUB_WEBHOOK_SECRET', secret):
             assert verify_github_signature(payload, signature) == True
 
     def test_verify_github_signature_invalid(self):
@@ -38,7 +38,7 @@ class TestGitHubService:
         payload = b'{"test": "data"}'
         signature = "sha256=invalid"
 
-        with patch('backend.app.services.github_service.GITHUB_WEBHOOK_SECRET', "test-secret"):
+        with patch('app.services.github_service.GITHUB_WEBHOOK_SECRET', "test-secret"):
             assert verify_github_signature(payload, signature) == False
 
     def test_verify_github_signature_no_secret(self):
@@ -46,7 +46,7 @@ class TestGitHubService:
         payload = b'{"test": "data"}'
         signature = "sha256=any"
 
-        with patch('backend.app.services.github_service.GITHUB_WEBHOOK_SECRET', ""):
+        with patch('app.services.github_service.GITHUB_WEBHOOK_SECRET', ""):
             assert verify_github_signature(payload, signature) == True
 
     @pytest.mark.asyncio
@@ -61,7 +61,7 @@ class TestGitHubService:
             "head_commit": {"message": "Test commit", "author": {"name": "Test Author"}}
         }
 
-        with patch('backend.app.services.github_service.rule_engine') as mock_rule_engine:
+        with patch('app.services.github_service.rule_engine') as mock_rule_engine:
             mock_rule_engine.evaluate_rules = AsyncMock(return_value=[{"action": "test"}])
 
             result = await process_github_webhook(event_type, payload)
@@ -79,7 +79,7 @@ class TestGitHubService:
         payload = {"test": "data"}
         signature = "sha256=invalid"
 
-        with patch('backend.app.services.github_service.GITHUB_WEBHOOK_SECRET', "test-secret"):
+        with patch('app.services.github_service.GITHUB_WEBHOOK_SECRET', "test-secret"):
             with pytest.raises(Exception):  # HTTPException
                 await process_github_webhook(event_type, payload, signature)
 

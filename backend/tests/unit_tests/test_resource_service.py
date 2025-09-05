@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.app.services.resource_service import ResourceService
-from backend.app.models.resource import Resource
-from backend.app.services.exceptions import NotFoundError
+from app.services.resource_service import ResourceService
+from app.models.resource import Resource
+from app.services.exceptions import NotFoundError
 
 @pytest.mark.asyncio
 class TestResourceService:
@@ -19,8 +19,8 @@ class TestResourceService:
         return service
 
     async def test_create_resource(self, resource_service):
-        from backend.app.models.user import User
-        from backend.app.models.resource import ResourceCreate, ResourceType
+        from app.models.user import User
+        from app.models.resource import ResourceCreate, ResourceType
         resource_data = ResourceCreate(
             name="Test Resource",
             type=ResourceType.MATERIAL,
@@ -49,7 +49,7 @@ class TestResourceService:
         assert result.name == "Test Resource"
 
     async def test_get_resource(self, resource_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         mock_resource = {
             "_id": "resource123",
@@ -69,7 +69,7 @@ class TestResourceService:
         assert result.name == "Test Resource"
 
     async def test_get_resource_not_found(self, resource_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         resource_service.db.resources.find_one = AsyncMock(return_value=None)
 
@@ -77,7 +77,7 @@ class TestResourceService:
             await resource_service.get_resource("nonexistent", user)
 
     async def test_allocate_resource(self, resource_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         mock_resource = {
             "_id": "resource123",
@@ -97,8 +97,8 @@ class TestResourceService:
         assert result.quantity == 75
 
     async def test_allocate_resource_insufficient_capacity(self, resource_service):
-        from backend.app.models.user import User
-        from backend.app.services.exceptions import BusinessLogicError
+        from app.models.user import User
+        from app.services.exceptions import BusinessLogicError
         user = User(username="user123", email="user123@example.com")
         from datetime import datetime
         mock_resource = {
@@ -118,8 +118,8 @@ class TestResourceService:
             await resource_service.allocate_resource("resource123", 20, user)
 
     async def test_update_resource(self, resource_service):
-        from backend.app.models.user import User
-        from backend.app.models.resource import ResourceUpdate
+        from app.models.user import User
+        from app.models.resource import ResourceUpdate
         user = User(username="user123", email="user123@example.com")
         update_data = ResourceUpdate(name="Updated Resource")
         mock_resource = {
@@ -140,7 +140,7 @@ class TestResourceService:
         assert result.name == "Updated Resource"
 
     async def test_delete_resource(self, resource_service):
-        from backend.app.models.user import User
+        from app.models.user import User
         user = User(username="user123", email="user123@example.com")
         mock_resource = {
             "_id": "resource123",

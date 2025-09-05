@@ -12,6 +12,7 @@ import { Calendar, Users, Folder, CheckCircle, Loader2, TrendingUp, BarChart3 } 
 import { useDashboardStats, useProjects, useTasks, useGitHubData, useRealtimeUpdates } from '@/lib/hooks'
 import { Chart } from '@/components/ui/chart'
 import { GitHubIntegration } from '@/components/GitHubIntegration'
+import { CustomWidget } from '@/components/CustomWidget'
 
 export default function DashboardPage() {
   const { t } = useTranslation('common')
@@ -257,6 +258,11 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      </Card>
+
+      {/* Custom Widgets */}
+      <Card className="p-6 mt-6">
+        <CustomWidget />
       </Card>
     </div>
   )

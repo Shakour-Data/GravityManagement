@@ -45,6 +45,17 @@ const nextConfig = {
           minChunks: 2,
           chunks: 'all',
         },
+        // Route-based code splitting
+        pages: {
+          test: /[\\/]pages[\\/]/,
+          name: 'pages',
+          chunks: 'all',
+        },
+        components: {
+          test: /[\\/]components[\\/]/,
+          name: 'components',
+          chunks: 'all',
+        },
       }
     }
 

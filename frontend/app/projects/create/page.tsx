@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { useCreateProject } from '@/lib/hooks'
+import { FileUpload } from '@/components/FileUpload'
 
 export default function CreateProjectPage() {
   const { t } = useTranslation('common')
@@ -79,6 +80,12 @@ export default function CreateProjectPage() {
               <option value="on-hold">{t('onHold', 'On Hold')}</option>
               <option value="completed">{t('completed', 'Completed')}</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t('attachments', 'Attachments')}
+            </label>
+            <FileUpload onFilesUploaded={(files) => console.log('Files uploaded:', files)} />
           </div>
           <div>
             <Button type="submit" disabled={createProject.loading}>

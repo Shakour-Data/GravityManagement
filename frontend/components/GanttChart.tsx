@@ -256,13 +256,13 @@ export default function GanttChart({
           </select>
 
           {/* Zoom Controls */}
-          <Button variant="outline" size="sm" onClick={handleZoomOut}>
+          <Button variant="outline" size="sm" onClick={handleZoomOut} aria-label="Zoom Out">
             <ZoomOut className="h-4 w-4" />
           </Button>
           <span className="text-sm text-gray-600 min-w-[60px] text-center">
             {Math.round(zoom * 100)}%
           </span>
-          <Button variant="outline" size="sm" onClick={handleZoomIn}>
+          <Button variant="outline" size="sm" onClick={handleZoomIn} aria-label="Zoom In">
             <ZoomIn className="h-4 w-4" />
           </Button>
 
@@ -391,6 +391,7 @@ export default function GanttChart({
                           <div
                             className="h-full bg-white rounded"
                             style={{ width: `${task.progress}%` }}
+                            data-testid="task-progress-bar"
                           />
                         </div>
                       </div>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="4" failures="0" errors="0" time="4.278">
+  <testsuite name="GanttChart" errors="0" failures="0" skipped="0" timestamp="2025-09-05T09:58:14" time="2.771" tests="4">
+    <testcase classname="GanttChart renders task names" name="GanttChart renders task names" time="0.525">
+    </testcase>
+    <testcase classname="GanttChart renders progress bars with correct width" name="GanttChart renders progress bars with correct width" time="0.168">
+    </testcase>
+    <testcase classname="GanttChart handles zoom in and zoom out buttons" name="GanttChart handles zoom in and zoom out buttons" time="0.233">
+    </testcase>
+    <testcase classname="GanttChart renders dependencies arrows" name="GanttChart renders dependencies arrows" time="0.075">
+    </testcase>
+  </testsuite>
+</testsuites>

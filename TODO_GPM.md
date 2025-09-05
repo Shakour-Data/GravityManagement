@@ -42,6 +42,7 @@
 - [x] Set up password hashing
 - [x] Implement user registration and login
 - [x] Add OAuth integration with GitHub
+- [x] Add OAuth integration with Google
 - [x] Implement role-based access control
 - [x] Add API rate limiting
 

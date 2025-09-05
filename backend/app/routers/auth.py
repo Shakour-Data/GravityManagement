@@ -18,6 +18,10 @@ from ..services.auth_service import (
     exchange_github_code_for_token,
     get_github_user_info,
     authenticate_or_create_github_user,
+    get_google_oauth_url,
+    exchange_google_code_for_token,
+    get_google_user_info,
+    authenticate_or_create_google_user,
     check_user_role
 )
 
@@ -155,6 +159,48 @@ async def github_callback(code: str = Query(...), state: str = Query(...)):
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"GitHub authentication failed: {str(e)}")
+
+@router.get("/google/login")
+async def google_login(state: Optional[str] = None):
+    """
+    Initiate Google OAuth login
+    """
+    return {"authorization_url": get_google_oauth_url(state)}
+
+@router.get("/google/callback")
+async def google_callback(code: str = Query(...), state: str = Query(...)):
+    """
+    Handle Google OAuth callback
+    """
+    try:
+        # Exchange code for token
+        token_data = await exchange_google_code_for_token(code)
+
+        if "error" in token_data:
+            raise HTTPException(status_code=400, detail=token_data.get("error_description", "Google OAuth error"))
+
+        access_token = token_data["access_token"]
+
+        # Get user info from Google
+        google_user_data = await get_google_user_info(access_token)
+
+        # Authenticate or create user
+        user = await authenticate_or_create_google_user(google_user_data, access_token)
+
+        # Create JWT token
+        jwt_token = create_access_token(
+            data={"sub": user.username},
+            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        )
+
+        return {
+            "access_token": jwt_token,
+            "token_type": "bearer",
+            "user": User(**user.dict())
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Google authentication failed: {str(e)}")
 
 @router.get("/users", response_model=list[User])
 async def get_users(

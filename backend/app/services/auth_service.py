@@ -17,6 +17,11 @@ GITHUB_CLIENT_ID = "your-github-client-id"
 GITHUB_CLIENT_SECRET = "your-github-client-secret"
 GITHUB_REDIRECT_URI = "http://localhost:8000/auth/github/callback"
 
+# Google OAuth settings - should be set via environment variables
+GOOGLE_CLIENT_ID = "your-google-client-id"
+GOOGLE_CLIENT_SECRET = "your-google-client-secret"
+GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):
@@ -168,6 +173,123 @@ async def authenticate_or_create_github_user(github_user_data: Dict[str, Any], a
         "full_name": github_user_data.get("name", ""),
         "github_id": github_user_data["id"],
         "github_access_token": access_token,
+        "role": "user",
+        "disabled": False,
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
+    }
+
+    result = await db.users.insert_one(user_dict)
+    created_user = await db.users.find_one({"_id": result.inserted_id})
+    return UserInDB(**created_user)
+
+# Google OAuth functions
+def get_google_oauth_url(state: str = None) -> str:
+    """
+    Generate Google OAuth authorization URL
+    """
+    if not state:
+        state = secrets.token_urlsafe(32)
+
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "scope": "openid email profile",
+        "response_type": "code",
+        "state": state,
+        "access_type": "offline",
+        "prompt": "consent"
+    }
+
+    query_string = "&".join([f"{k}={v}" for k, v in params.items()])
+    return f"https://accounts.google.com/o/oauth2/v2/auth?{query_string}"
+
+async def exchange_google_code_for_token(code: str) -> Dict[str, Any]:
+    """
+    Exchange Google authorization code for access token
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": GOOGLE_REDIRECT_URI
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
+        )
+
+    if response.status_code != 200:
+        raise Exception("Failed to exchange code for token")
+
+    return response.json()
+
+async def get_google_user_info(access_token: str) -> Dict[str, Any]:
+    """
+    Get user information from Google API
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={
+                "Authorization": f"Bearer {access_token}"
+            }
+        )
+
+    if response.status_code != 200:
+        raise Exception("Failed to get user info from Google")
+
+    return response.json()
+
+async def authenticate_or_create_google_user(google_user_data: Dict[str, Any], access_token: str) -> UserInDB:
+    """
+    Authenticate existing user or create new user from Google data
+    """
+    db = get_database()
+
+    # Try to find existing user by Google ID
+    existing_user = await db.users.find_one({"google_id": google_user_data["id"]})
+
+    if existing_user:
+        # Update access token
+        await db.users.update_one(
+            {"_id": existing_user["_id"]},
+            {"$set": {"google_access_token": access_token, "updated_at": datetime.now(timezone.utc)}}
+        )
+        return UserInDB(**existing_user)
+
+    # Try to find by email
+    existing_user = await db.users.find_one({"email": google_user_data.get("email")})
+
+    if existing_user:
+        # Link Google account
+        await db.users.update_one(
+            {"_id": existing_user["_id"]},
+            {"$set": {
+                "google_id": google_user_data["id"],
+                "google_access_token": access_token,
+                "updated_at": datetime.now(timezone.utc)
+            }}
+        )
+        return UserInDB(**existing_user)
+
+    # Create new user
+    username = google_user_data.get("email", "").split("@")[0]
+    # Ensure username is unique
+    counter = 1
+    original_username = username
+    while await db.users.find_one({"username": username}):
+        username = f"{original_username}_{counter}"
+        counter += 1
+
+    user_dict = {
+        "username": username,
+        "email": google_user_data.get("email", ""),
+        "full_name": google_user_data.get("name", ""),
+        "google_id": google_user_data["id"],
+        "google_access_token": access_token,
         "role": "user",
         "disabled": False,
         "created_at": datetime.now(timezone.utc),

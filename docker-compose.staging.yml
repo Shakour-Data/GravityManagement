@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: gravitypm-nginx-staging
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/app/ssl
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - gravitypm-staging
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gravitypm-backend-staging
+    environment:
+      - MONGODB_URL=${MONGODB_STAGING_URL}
+      - REDIS_URL=${REDIS_STAGING_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - ENVIRONMENT=staging
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+    networks:
+      - gravitypm-staging
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gravitypm-frontend-staging
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_STAGING_URL}
+      - ENVIRONMENT=staging
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+    networks:
+      - gravitypm-staging
+
+  redis:
+    image: redis:alpine
+    container_name: gravitypm-redis-staging
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - gravitypm-staging
+
+  # Monitoring for staging
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: gravitypm-prometheus-staging
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_staging_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - gravitypm-staging
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gravitypm-grafana-staging
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_staging_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+    networks:
+      - gravitypm-staging
+
+volumes:
+  redis_staging_data:
+  prometheus_staging_data:
+  grafana_staging_data:
+
+networks:
+  gravitypm-staging:
+    driver: bridge

@@ -42,6 +42,28 @@ export default function LoginPage() {
     }
   }
 
+  const handleGoogleLogin = async () => {
+    try {
+      const response = await apiClient.get('/auth/google/login')
+      if (response.data.authorization_url) {
+        window.location.href = response.data.authorization_url
+      }
+    } catch (err) {
+      setError('Failed to initiate Google login')
+    }
+  }
+
+  const handleGitHubLogin = async () => {
+    try {
+      const response = await apiClient.get('/auth/github/login')
+      if (response.data.authorization_url) {
+        window.location.href = response.data.authorization_url
+      }
+    } catch (err) {
+      setError('Failed to initiate GitHub login')
+    }
+  }
+
   return (
     <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded-md shadow-md">
       <h1 className="text-2xl font-bold mb-6">{t('login')}</h1>
@@ -57,6 +79,33 @@ export default function LoginPage() {
           {error}
         </Alert>
       )}
+
+      {/* OAuth Buttons */}
+      <div className="mb-6 space-y-3">
+        <Button
+          onClick={handleGoogleLogin}
+          className="w-full bg-red-600 hover:bg-red-700 text-white"
+          type="button"
+        >
+          Continue with Google
+        </Button>
+        <Button
+          onClick={handleGitHubLogin}
+          className="w-full bg-gray-800 hover:bg-gray-900 text-white"
+          type="button"
+        >
+          Continue with GitHub
+        </Button>
+      </div>
+
+      <div className="relative mb-6">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+        </div>
+      </div>
 
       <Form onSubmit={onSubmit} schema={loginSchema}>
         <FormField name="email" label={t('email')} type="email" required />

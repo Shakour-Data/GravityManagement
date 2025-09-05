@@ -5,7 +5,7 @@ Run this script to initialize database indexes for better query performance.
 """
 
 import asyncio
-from database import connect_to_mongo, create_indexes, close_mongo_connection
+from app.database import connect_to_mongo, create_indexes, close_mongo_connection
 
 async def main():
     """

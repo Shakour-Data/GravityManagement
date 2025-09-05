@@ -1,13 +1,13 @@
 import pytest
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 from jose import jwt, JWTError
 
 # Import the auth service functions
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from app.services.auth_service import (
     verify_password,
@@ -83,6 +83,7 @@ class TestAuthenticateUser:
             "role": "user"
         }
 
+    @pytest.mark.asyncio
     @patch('app.services.auth_service.get_database')
     async def test_authenticate_user_success(self, mock_get_database, mock_db, sample_user_data):
         """Test successful user authentication"""
@@ -97,6 +98,9 @@ class TestAuthenticateUser:
         assert result.email == "test@example.com"
         mock_db.users.find_one.assert_called_once_with({"username": "testuser"})
 
+
+
+    @pytest.mark.asyncio
     @patch('app.services.auth_service.get_database')
     async def test_authenticate_user_not_found(self, mock_get_database, mock_db):
         """Test authentication with non-existent user"""
@@ -108,6 +112,7 @@ class TestAuthenticateUser:
         assert result is False
         mock_db.users.find_one.assert_called_once_with({"username": "nonexistent"})
 
+    @pytest.mark.asyncio
     @patch('app.services.auth_service.get_database')
     async def test_authenticate_user_wrong_password(self, mock_get_database, mock_db, sample_user_data):
         """Test authentication with wrong password"""
@@ -119,37 +124,7 @@ class TestAuthenticateUser:
         assert result is False
         mock_db.users.find_one.assert_called_once_with({"username": "testuser"})
 
-    @patch('app.services.auth_service.get_database')
-    async def test_authenticate_user_database_error(self, mock_get_database, mock_db):
-        """Test authentication with database error"""
-        mock_get_database.return_value = mock_db
-        mock_db.users.find_one.side_effect = Exception("Database error")
-
-        with pytest.raises(Exception):
-            await authenticate_user("testuser", "password")
-
-    @patch('app.services.auth_service.get_database')
-    async def test_authenticate_user_not_found(self, mock_get_database, mock_db):
-        """Test authentication with non-existent user"""
-        mock_get_database.return_value = mock_db
-        mock_db.users.find_one.return_value = None
-
-        result = await authenticate_user("nonexistent", "password")
-
-        assert result is False
-        mock_db.users.find_one.assert_called_once_with({"username": "nonexistent"})
-
-    @patch('app.services.auth_service.get_database')
-    async def test_authenticate_user_wrong_password(self, mock_get_database, mock_db, sample_user_data):
-        """Test authentication with wrong password"""
-        mock_get_database.return_value = mock_db
-        mock_db.users.find_one.return_value = sample_user_data
-
-        result = await authenticate_user("testuser", "wrongpassword")
-
-        assert result is False
-        mock_db.users.find_one.assert_called_once_with({"username": "testuser"})
-
+    @pytest.mark.asyncio
     @patch('app.services.auth_service.get_database')
     async def test_authenticate_user_database_error(self, mock_get_database, mock_db):
         """Test authentication with database error"""
@@ -179,8 +154,8 @@ class TestCreateAccessToken:
         assert "exp" in decoded
 
         # Check expiry is approximately 15 minutes from now
-        expected_exp = datetime.utcnow() + timedelta(minutes=15)
-        actual_exp = datetime.utcfromtimestamp(decoded["exp"])
+        expected_exp = datetime.now(timezone.utc) + timedelta(minutes=15)
+        actual_exp = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
         time_diff = abs((actual_exp - expected_exp).total_seconds())
         assert time_diff < 10  # Within 10 seconds
 
@@ -195,8 +170,8 @@ class TestCreateAccessToken:
         assert decoded["sub"] == "testuser"
 
         # Check expiry is approximately 1 hour from now
-        expected_exp = datetime.utcnow() + timedelta(hours=1)
-        actual_exp = datetime.utcfromtimestamp(decoded["exp"])
+        expected_exp = datetime.now(timezone.utc) + timedelta(hours=1)
+        actual_exp = datetime.fromtimestamp(decoded["exp"], tz=timezone.utc)
         time_diff = abs((actual_exp - expected_exp).total_seconds())
         assert time_diff < 10  # Within 10 seconds
 

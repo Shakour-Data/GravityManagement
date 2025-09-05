@@ -7,8 +7,8 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app")))
 
-from backend.app.services.rule_engine import RuleEngine
-from backend.app.models.task import TaskStatus
+from app.services.rule_engine import RuleEngine
+from app.models.task import TaskStatus
 
 
 class TestRuleEngine:

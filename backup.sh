@@ -57,16 +57,23 @@ EOF
 echo "Compressing backup..."
 tar -czf $BACKUP_DIR/${BACKUP_NAME}.tar.gz -C $BACKUP_DIR $BACKUP_NAME
 
+# Encrypt the backup
+echo "Encrypting backup..."
+gpg --symmetric --cipher-algo AES256 --output $BACKUP_DIR/${BACKUP_NAME}.tar.gz.gpg $BACKUP_DIR/${BACKUP_NAME}.tar.gz
+
+# Remove unencrypted backup
+rm $BACKUP_DIR/${BACKUP_NAME}.tar.gz
+
 # Clean up uncompressed backup
 rm -rf $BACKUP_DIR/$BACKUP_NAME
 
 # Clean up old backups (older than RETENTION_DAYS)
 echo "Cleaning up old backups..."
-find $BACKUP_DIR -name "gravitypm_backup_*.tar.gz" -mtime +$RETENTION_DAYS -delete
+find $BACKUP_DIR -name "gravitypm_backup_*.tar.gz.gpg" -mtime +$RETENTION_DAYS -delete
 
 # Upload to cloud storage (optional - uncomment and configure)
-# aws s3 cp $BACKUP_DIR/${BACKUP_NAME}.tar.gz s3://gravitypm-backups/
+# aws s3 cp $BACKUP_DIR/${BACKUP_NAME}.tar.gz.gpg s3://gravitypm-backups/
 
 echo "Backup completed successfully!"
-echo "Backup location: $BACKUP_DIR/${BACKUP_NAME}.tar.gz"
-echo "Backup size: $(du -sh $BACKUP_DIR/${BACKUP_NAME}.tar.gz | cut -f1)"
+echo "Backup location: $BACKUP_DIR/${BACKUP_NAME}.tar.gz.gpg"
+echo "Backup size: $(du -sh $BACKUP_DIR/${BACKUP_NAME}.tar.gz.gpg | cut -f1)"

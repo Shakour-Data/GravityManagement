@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront CDN Template for GravityPM Application'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: gravitypm
+    Description: Environment name for tagging
+
+  LoadBalancerDNSName:
+    Type: String
+    Description: DNS name of the Application Load Balancer
+
+  CertificateArn:
+    Type: String
+    Description: ARN of the SSL certificate for CloudFront
+
+  DomainName:
+    Type: String
+    Description: Custom domain name for the distribution
+
+Resources:
+  # CloudFront Origin Access Identity
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::OriginAccessIdentity
+    Properties:
+      OriginAccessIdentityConfig:
+        Comment: !Sub Origin Access Identity for ${EnvironmentName}
+
+  # CloudFront Distribution
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Sub ${EnvironmentName} CloudFront Distribution
+        DefaultCacheBehavior:
+          TargetOriginId: !Sub ${EnvironmentName}-alb-origin
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: all
+          CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad' # CachingEnabled
+        Origins:
+          - DomainName: !Ref LoadBalancerDNSName
+            Id: !Sub ${EnvironmentName}-alb-origin
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
+        Enabled: true
+        Aliases:
+          - !Ref DomainName
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        HttpVersion: http2
+        CacheBehaviors:
+          - PathPattern: '/api/*'
+            TargetOriginId: !Sub ${EnvironmentName}-alb-origin
+            ViewerProtocolPolicy: redirect-to-https
+            Compress: true
+            ForwardedValues:
+              QueryString: true
+              Cookies:
+                Forward: all
+            CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad' # CachingDisabled
+          - PathPattern: '/static/*'
+            TargetOriginId: !Sub ${EnvironmentName}-alb-origin
+            ViewerProtocolPolicy: redirect-to-https
+            Compress: true
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+            CachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6' # CachingOptimized
+        PriceClass: PriceClass_100
+        Tags:
+          - Key: Name
+            Value: !Sub ${EnvironmentName}-cloudfront
+          - Key: Environment
+            Value: !Ref EnvironmentName
+
+Outputs:
+  CloudFrontDistributionId:
+    Description: CloudFront Distribution ID
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub ${EnvironmentName}-cloudfront-id
+
+  CloudFrontDomainName:
+    Description: CloudFront Distribution Domain Name
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub ${EnvironmentName}-cloudfront-domain
+
+  CloudFrontOriginAccessIdentity:
+    Description: CloudFront Origin Access Identity
+    Value: !Ref CloudFrontOriginAccessIdentity
+    Export:
+      Name: !Sub ${EnvironmentName}-cloudfront-oai

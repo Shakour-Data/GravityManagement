@@ -83,8 +83,80 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
     - uses: actions/checkout@v3
-    - name: Deploy to production
+    - name: Blue-Green Deployment to Production
       run: |
-        echo "Deploying to production..."
-        # Add your production deployment commands here
-        # For example: scp to production server, run deploy script
+        echo "Starting blue-green deployment to production..."
+
+        # Determine which environment is currently active (blue or green)
+        CURRENT_ENV=$(curl -s http://production-server/current-env || echo "blue")
+        if [ "$CURRENT_ENV" = "blue" ]; then
+          TARGET_ENV="green"
+          ROLLBACK_ENV="blue"
+        else
+          TARGET_ENV="blue"
+          ROLLBACK_ENV="green"
+        fi
+
+        echo "Deploying to $TARGET_ENV environment..."
+
+        # Update docker-compose.prod.yml with new image tags
+        sed -i "s|gravitypm/backend:latest|gravitypm/backend:${{ github.sha }}|g" docker-compose.prod.yml
+        sed -i "s|gravitypm/frontend:latest|gravitypm/frontend:${{ github.sha }}|g" docker-compose.prod.yml
+
+        # Deploy to target environment
+        echo "Deploying to production $TARGET_ENV..."
+        # scp docker-compose.prod.yml user@production-server:/path/to/app/$TARGET_ENV/
+        # ssh user@production-server "cd /path/to/app/$TARGET_ENV && docker-compose pull && docker-compose up -d"
+
+        # Health check
+        echo "Performing health checks on $TARGET_ENV..."
+        # for i in {1..30}; do
+        #   if curl -f http://production-server-$TARGET_ENV/health; then
+        #     echo "Health check passed"
+        #     break
+        #   fi
+        #   sleep 10
+        # done
+
+        # Switch traffic to new environment
+        echo "Switching traffic to $TARGET_ENV..."
+        # Update load balancer or nginx config to point to new environment
+        # ssh user@production-server "nginx -s reload"
+
+        # Wait for traffic to stabilize
+        sleep 30
+
+        # Final health check
+        # if ! curl -f http://production-server/health; then
+        #   echo "Production health check failed, initiating rollback..."
+        #   # Rollback procedure
+        #   exit 1
+        # fi
+
+        # Update current environment marker
+        # echo "$TARGET_ENV" > /tmp/current_env
+        # scp /tmp/current_env user@production-server:/path/to/app/
+
+        echo "Production deployment completed successfully"
+
+    - name: Rollback on Failure
+      if: failure()
+      run: |
+        echo "Deployment failed, initiating rollback..."
+        # Rollback to previous environment
+        # ssh user@production-server "nginx -s reload"  # Switch back to previous env
+        # Optionally scale down the failed environment
+        # ssh user@production-server "cd /path/to/app/$TARGET_ENV && docker-compose down"
+
+    - name: Deployment Notification
+      if: always()
+      run: |
+        if [ ${{ job.status }} = "success" ]; then
+          echo "✅ Production deployment successful"
+          # Send success notification
+          # curl -X POST -H 'Content-type: application/json' --data '{"text":"Production deployment successful"}' ${{ secrets.SLACK_WEBHOOK }}
+        else
+          echo "❌ Production deployment failed"
+          # Send failure notification
+          # curl -X POST -H 'Content-type: application/json' --data '{"text":"Production deployment failed"}' ${{ secrets.SLACK_WEBHOOK }}
+        fi

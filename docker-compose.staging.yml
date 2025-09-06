@@ -9,6 +9,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx-waf.conf:/etc/nginx/nginx-waf.conf
       - ./ssl:/app/ssl
     depends_on:
       - backend
@@ -59,8 +60,23 @@ services:
     networks:
       - gravitypm-staging
 
-  # Monitoring for staging
-  prometheus:
+  # MongoDB for staging (single instance for development/testing)
+  mongodb-staging:
+    image: mongo:6.0
+    container_name: gravitypm-mongodb-staging
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: gravitypm_staging
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_staging_data:/data/db
+    networks:
+      - gravitypm-staging
+
+  # Basic monitoring for staging
+  prometheus-staging:
     image: prom/prometheus:latest
     container_name: gravitypm-prometheus-staging
     ports:
@@ -78,24 +94,24 @@ services:
     networks:
       - gravitypm-staging
 
-  grafana:
+  grafana-staging:
     image: grafana/grafana:latest
     container_name: gravitypm-grafana-staging
     ports:
       - "3001:3000"
     volumes:
       - grafana_staging_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=false
     depends_on:
-      - prometheus
+      - prometheus-staging
     networks:
       - gravitypm-staging
 
 volumes:
   redis_staging_data:
+  mongodb_staging_data:
   prometheus_staging_data:
   grafana_staging_data:
 

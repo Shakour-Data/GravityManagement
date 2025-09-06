@@ -157,6 +157,32 @@ services:
     networks:
       - gravitypm
 
+  # Database monitoring (for local MongoDB - comment out if using MongoDB Atlas)
+  # mongodb-exporter:
+  #   image: percona/mongodb_exporter:latest
+  #   container_name: gravitypm-mongodb-exporter
+  #   ports:
+  #     - "9216:9216"
+  #   environment:
+  #     - MONGODB_URI=mongodb://mongodb:27017
+  #   depends_on:
+  #     - mongodb
+  #   networks:
+  #     - gravitypm
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: gravitypm-redis-exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    depends_on:
+      - redis
+    networks:
+      - gravitypm
+
 volumes:
   redis_data:
   prometheus_data:

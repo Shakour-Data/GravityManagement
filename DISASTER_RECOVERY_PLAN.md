@@ -1,130 +1,199 @@
 # GravityPM Disaster Recovery Plan
 
 ## Overview
-This document outlines the disaster recovery procedures for the GravityPM application, ensuring business continuity and data integrity in case of system failures, data loss, or catastrophic events.
+This document outlines the disaster recovery procedures for the GravityPM project. The goal is to minimize downtime and data loss in case of system failures, data corruption, or catastrophic events.
 
 ## Recovery Objectives
-- **RTO (Recovery Time Objective)**: 4 hours for critical systems, 24 hours for full recovery
-- **RPO (Recovery Point Objective)**: Maximum 1 hour of data loss
-- **MTTR (Mean Time To Recovery)**: 2 hours for database, 4 hours for full application
+
+### RTO (Recovery Time Objective)
+- **Critical Systems**: 4 hours
+- **Core Application**: 8 hours
+- **Full System**: 24 hours
+
+### RPO (Recovery Point Objective)
+- **Database**: 1 hour (last backup)
+- **Configuration**: 24 hours
+- **Logs**: Real-time (ELK stack)
 
 ## Recovery Strategies
 
 ### 1. Database Recovery
-#### Primary Strategy: Point-in-Time Recovery
-- Use MongoDB's oplog for point-in-time recovery
-- Maintain offsite backups with 30-day retention
-- Use replica sets for automatic failover
+#### MongoDB Atlas (Cloud)
+```bash
+# Restore from backup
+mongorestore --uri="$MONGODB_URL" --db gravitypm /backups/mongodb_backup_latest/
 
-#### Steps:
-1. Stop the application services
-2. Restore from the latest backup
-3. Apply oplog operations to reach the desired point in time
-4. Verify data integrity
-5. Restart application services
+# Verify restoration
+mongosh "$MONGODB_URL" --eval "db.stats()"
+```
 
-### 2. Application Recovery
-#### Container-Based Recovery
-- Use Docker containers for consistent deployment
-- Maintain container images in registry
-- Use orchestration (Docker Compose/Kubernetes)
+#### Local MongoDB
+```bash
+# Stop MongoDB service
+docker-compose stop mongodb
 
-#### Steps:
-1. Pull latest stable container images
-2. Deploy using docker-compose
-3. Restore configuration files
-4. Verify application health
-5. Update DNS/load balancer
+# Restore from backup
+docker run --rm -v /backups:/backups -v mongodb_data:/data/db mongo:latest mongorestore /backups/mongodb_backup/
 
-### 3. Infrastructure Recovery
-#### Cloud-Based Recovery
-- Use AWS/GCP/Azure for infrastructure
-- Implement multi-region deployment
-- Use load balancers for traffic distribution
+# Start MongoDB service
+docker-compose start mongodb
+```
 
-## Backup Strategy
+### 2. Redis Recovery
+```bash
+# Stop Redis service
+docker-compose stop redis
+
+# Restore Redis dump
+docker run --rm -v /backups:/backups -v redis_data:/data redis:latest redis-server --appendonly yes --dir /data --dbfilename dump.rdb
+
+# Copy backup file
+cp /backups/redis_backup_latest.rdb /var/lib/redis/dump.rdb
+
+# Start Redis service
+docker-compose start redis
+```
+
+### 3. Application Recovery
+```bash
+# Pull latest code
+git pull origin main
+
+# Rebuild and restart services
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+
+# Verify services
+curl -f http://localhost:8000/health
+curl -f http://localhost:3000
+```
+
+### 4. SSL Certificate Recovery
+```bash
+# Restore SSL certificates
+cp -r /backups/ssl_backup_latest/* /app/ssl/
+
+# Reload nginx configuration
+docker-compose restart nginx
+```
+
+## Emergency Contacts
+
+### Development Team
+- **Lead Developer**: [Name] - [Phone] - [Email]
+- **DevOps Engineer**: [Name] - [Phone] - [Email]
+- **Database Administrator**: [Name] - [Phone] - [Email]
+
+### Infrastructure Providers
+- **Cloud Provider**: [Provider] - [Support Phone] - [Support Email]
+- **Domain Registrar**: [Registrar] - [Support Phone] - [Support Email]
+- **SSL Certificate Provider**: [Provider] - [Support Phone] - [Support Email]
+
+## Recovery Procedures by Scenario
+
+### Scenario 1: Application Server Failure
+1. **Detection**: Monitoring alerts or user reports
+2. **Immediate Actions**:
+   - Check server status: `docker-compose ps`
+   - Review logs: `docker-compose logs backend`
+3. **Recovery Steps**:
+   - Restart failed service: `docker-compose restart backend`
+   - If restart fails, rebuild: `docker-compose up --build -d backend`
+4. **Verification**: Test application endpoints
+
+### Scenario 2: Database Corruption
+1. **Detection**: Application errors or monitoring alerts
+2. **Immediate Actions**:
+   - Stop all application services: `docker-compose stop`
+   - Assess damage: `mongosh "$MONGODB_URL" --eval "db.stats()"`
+3. **Recovery Steps**:
+   - Restore from latest backup
+   - Verify data integrity
+   - Restart services
+4. **Verification**: Run data validation tests
+
+### Scenario 3: Complete Infrastructure Failure
+1. **Detection**: All monitoring alerts down
+2. **Immediate Actions**:
+   - Contact cloud provider support
+   - Assess backup availability
+3. **Recovery Steps**:
+   - Provision new infrastructure
+   - Restore from backups
+   - Update DNS records
+   - Verify all services
+4. **Verification**: Full system testing
+
+### Scenario 4: Security Breach
+1. **Detection**: Security monitoring alerts
+2. **Immediate Actions**:
+   - Isolate affected systems
+   - Change all credentials
+   - Notify security team
+3. **Recovery Steps**:
+   - Clean compromised systems
+   - Restore from clean backups
+   - Update security configurations
+   - Monitor for further breaches
+4. **Verification**: Security audit
+
+## Backup Procedures
 
 ### Automated Backups
-- **Frequency**: Daily full backups, hourly incremental
-- **Retention**: 30 days for daily, 7 days for hourly
-- **Storage**: Local + Cloud (AWS S3/GCP Cloud Storage)
-- **Encryption**: AES-256 encryption for all backups
+- **Frequency**: Daily at 2:00 AM UTC
+- **Retention**: 30 days
+- **Location**: `/backups/` directory
+- **Verification**: Automated checksum validation
 
-### Backup Components
-1. **Database**: MongoDB dumps with oplog
-2. **Application Files**: Source code, configurations
-3. **User Data**: Uploaded files, attachments
-4. **System Configuration**: Nginx, systemd services
-
-## Incident Response
-
-### Detection and Assessment
-1. Monitor system health using Prometheus/Grafana
-2. Set up alerts for critical failures
-3. Maintain incident response team contact list
-
-### Recovery Procedures
-
-#### Minor Incident (Single Service Failure)
-1. Identify failed component
-2. Restart service using Docker
-3. Verify functionality
-4. Update monitoring dashboard
-
-#### Major Incident (System-wide Failure)
-1. Assess damage and data loss
-2. Activate backup recovery procedures
-3. Restore from latest backup
-4. Test application functionality
-5. Communicate with stakeholders
-
-#### Catastrophic Failure (Data Center Loss)
-1. Activate secondary data center
-2. Restore from geo-redundant backups
-3. Update DNS to point to recovery site
-4. Verify all systems operational
-5. Perform thorough testing
+### Manual Backups
+- **Trigger**: Before major deployments
+- **Process**: Run `scripts/backup.sh`
+- **Verification**: Manual inspection
 
 ## Testing and Maintenance
 
-### Regular Testing
-- **Monthly**: Test backup restoration
-- **Quarterly**: Full disaster recovery simulation
-- **Annually**: Review and update recovery procedures
+### Recovery Testing
+- **Frequency**: Monthly
+- **Scope**: Full system recovery simulation
+- **Documentation**: Update this plan based on test results
 
-### Maintenance Tasks
-- Verify backup integrity weekly
-- Update recovery documentation quarterly
-- Test failover procedures monthly
-- Review and update contact lists quarterly
+### Plan Updates
+- **Frequency**: Quarterly or after incidents
+- **Review**: All team members
+- **Approval**: Development lead
 
 ## Communication Plan
 
 ### Internal Communication
-- Incident response team: Immediate notification
-- Development team: Technical updates
-- Management: Status reports every 2 hours
+- **Slack Channel**: #incidents
+- **Email Distribution**: dev-team@company.com
+- **Status Page**: Internal wiki
 
 ### External Communication
-- Customers: Status page updates
-- Stakeholders: Email notifications for major incidents
-- Media: Prepared statements for catastrophic events
-
-## Contact Information
-
-### Incident Response Team
-- Primary: [Contact Name] - [Phone] - [Email]
-- Secondary: [Contact Name] - [Phone] - [Email]
-- On-call Engineer: [Phone] - [Email]
-
-### External Resources
-- Cloud Provider Support: [Contact Info]
-- Database Support: [Contact Info]
-- Security Team: [Contact Info]
+- **Customer Communication**: Status page updates
+- **Stakeholder Updates**: Email notifications
+- **Public Announcements**: Company website
 
 ## Appendices
 
-### Appendix A: Detailed Recovery Scripts
-### Appendix B: Backup Verification Procedures
-### Appendix C: System Architecture Diagrams
-### Appendix D: Contact Lists and Escalation Matrix
+### Appendix A: System Architecture
+- Detailed component diagrams
+- Network topology
+- Data flow diagrams
+
+### Appendix B: Backup Inventory
+- Complete list of backup files
+- Backup locations and access procedures
+- Encryption keys and passwords
+
+### Appendix C: Contact Information
+- Complete contact list with 24/7 numbers
+- Escalation procedures
+- Vendor contact information
+
+---
+
+**Last Updated**: $(date)
+**Version**: 1.0
+**Approved By**: Development Team Lead

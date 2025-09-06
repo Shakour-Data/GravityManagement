@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 import secrets
+import os
 import httpx
 import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError
@@ -13,14 +14,14 @@ SECRET_KEY = "your-secret-key-here"  # In production, use environment variable
 ALGORITHM = "HS256"
 
 # GitHub OAuth settings - should be set via environment variables
-GITHUB_CLIENT_ID = "your-github-client-id"
-GITHUB_CLIENT_SECRET = "your-github-client-secret"
-GITHUB_REDIRECT_URI = "http://localhost:8000/auth/github/callback"
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", "your-github-client-id")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", "your-github-client-secret")
+GITHUB_REDIRECT_URI = os.getenv("GITHUB_REDIRECT_URI", "http://localhost:8000/auth/github/callback")
 
 # Google OAuth settings - should be set via environment variables
-GOOGLE_CLIENT_ID = "your-google-client-id"
-GOOGLE_CLIENT_SECRET = "your-google-client-secret"
-GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "your-google-client-id")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "your-google-client-secret")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

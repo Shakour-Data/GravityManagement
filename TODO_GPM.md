@@ -43,6 +43,7 @@
 - [x] Implement user registration and login
 - [x] Add OAuth integration with GitHub
 - [x] Add OAuth integration with Google
+- [x] Update .env.example with Google OAuth variables
 - [x] Implement role-based access control
 - [x] Add API rate limiting
 

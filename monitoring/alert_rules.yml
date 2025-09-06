@@ -25,3 +25,30 @@ groups:
     annotations:
       summary: "Low disk space on {{ $labels.instance }}"
       description: "Disk space on root partition is below 15% for more than 10 minutes."
+
+  - alert: MongoDBDown
+    expr: mongodb_up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "MongoDB is down on {{ $labels.instance }}"
+      description: "MongoDB has been down for more than 5 minutes."
+
+  - alert: MongoDBReplicationLag
+    expr: mongodb_mongod_replset_member_replication_lag > 30
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "MongoDB replication lag on {{ $labels.instance }}"
+      description: "Replication lag is greater than 30 seconds for more than 5 minutes."
+
+  - alert: RedisDown
+    expr: redis_up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Redis is down on {{ $labels.instance }}"
+      description: "Redis has been down for more than 5 minutes."

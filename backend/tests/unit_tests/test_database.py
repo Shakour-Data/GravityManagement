@@ -13,7 +13,17 @@ class TestDatabase:
 
         await connect_to_mongo()
 
-        mock_client_class.assert_called_once_with("mongodb://localhost:27017")
+        # Check that AsyncIOMotorClient was called with the expected parameters
+        mock_client_class.assert_called_once_with(
+            "mongodb://localhost:27017",
+            maxPoolSize=10,
+            minPoolSize=2,
+            maxIdleTimeMS=30000,
+            heartbeatFrequencyMS=10000,
+            serverSelectionTimeoutMS=5000,
+            retryWrites=True,
+            retryReads=True
+        )
         mock_client.admin.command.assert_called_once_with('ping')
 
     @patch('app.database.AsyncIOMotorClient')

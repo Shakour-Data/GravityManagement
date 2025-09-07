@@ -3,6 +3,7 @@ from datetime import datetime
 from ..database import get_database
 from ..models.project import Project, ProjectCreate, ProjectUpdate, ProjectTimeline, TimelineMilestone
 from .websocket_manager import manager
+from .cache_service import cached, invalidate_cache
 import json
 
 class ProjectService:
@@ -25,6 +26,7 @@ class ProjectService:
         await manager.broadcast(message)
         return Project(**created_project)
 
+    @invalidate_cache("project:*")
     async def update_project(self, project_id: str, project_update: ProjectUpdate, user) -> Optional[Project]:
         update_data = project_update.dict(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
@@ -37,6 +39,7 @@ class ProjectService:
         await manager.broadcast(message)
         return Project(**updated_project)
 
+    @cached(ttl_seconds=300, key_prefix="project")
     async def get_project(self, project_id: str, user=None) -> Optional[Project]:
         project = await self.db.projects.find_one({"_id": project_id})
         if project:
@@ -122,12 +125,22 @@ class ProjectService:
             "status": "over_budget" if project.spent_amount > project.budget else "on_track"
         }
 
+    @invalidate_cache("project:*")
     async def delete_project(self, project_id: str, user) -> bool:
         project = await self.get_project(project_id, user)
         if not project:
             return False
         result = await self.db.projects.delete_one({"_id": project_id})
         return result.deleted_count > 0
+
+    @cached(ttl_seconds=300, key_prefix="user_projects")
+    async def get_user_projects(self, username: str) -> List[Project]:
+        """Get all projects for a specific user with caching"""
+        cursor = self.db.projects.find({"$or": [{"owner_id": username}, {"team_members": username}]})
+        projects = []
+        async for project_doc in cursor:
+            projects.append(Project(**project_doc))
+        return projects
 
     # Additional methods for timeline management, critical path calculation, budget alerts etc. can be added here
 

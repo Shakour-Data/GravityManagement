@@ -63,21 +63,41 @@ cp -r /app/ssl "$BACKUP_DIR/ssl_backup_$(date +%F_%H-%M-%S)" 2>/dev/null || log 
 log "Backing up environment configuration..."
 env | grep -v -E "(PASSWORD|SECRET|KEY)" > "$BACKUP_DIR/env_backup_$(date +%F_%H-%M-%S).txt"
 
-# Compress the entire backup
-log "Compressing backup..."
+# Encrypt and compress the entire backup
+log "Encrypting and compressing backup..."
 cd /backups
-tar -czf "$(basename $BACKUP_DIR).tar.gz" "$(basename $BACKUP_DIR)"
-if [ $? -eq 0 ]; then
-    log "Backup compression successful."
-    # Remove uncompressed backup to save space
-    rm -rf "$BACKUP_DIR"
+
+# Check if encryption key is provided
+if [ -n "$BACKUP_ENCRYPTION_KEY" ]; then
+    log "Encrypting backup with provided key..."
+    # Create encrypted backup
+    tar -czf - "$(basename $BACKUP_DIR)" | openssl enc -aes-256-cbc -salt -pbkdf2 -pass pass:"$BACKUP_ENCRYPTION_KEY" -out "$(basename $BACKUP_DIR).tar.gz.enc"
+    if [ $? -eq 0 ]; then
+        log "Backup encryption and compression successful."
+        # Remove uncompressed backup to save space
+        rm -rf "$BACKUP_DIR"
+    else
+        log "ERROR: Backup encryption failed! Falling back to unencrypted backup."
+        # Fallback to unencrypted backup
+        tar -czf "$(basename $BACKUP_DIR).tar.gz" "$(basename $BACKUP_DIR)"
+        rm -rf "$BACKUP_DIR"
+    fi
 else
-    log "ERROR: Backup compression failed!"
+    log "WARNING: BACKUP_ENCRYPTION_KEY not set, creating unencrypted backup..."
+    tar -czf "$(basename $BACKUP_DIR).tar.gz" "$(basename $BACKUP_DIR)"
+    if [ $? -eq 0 ]; then
+        log "Backup compression successful (unencrypted)."
+        # Remove uncompressed backup to save space
+        rm -rf "$BACKUP_DIR"
+    else
+        log "ERROR: Backup compression failed!"
+    fi
 fi
 
 # Cleanup old backups (keep last 30 days)
 log "Cleaning up old backups..."
 find /backups -name "*.tar.gz" -mtime +30 -delete
+find /backups -name "*.tar.gz.enc" -mtime +30 -delete
 find /backups -name "*.gz" -mtime +30 -delete
 find /backups -name "*.rdb" -mtime +30 -delete
 
